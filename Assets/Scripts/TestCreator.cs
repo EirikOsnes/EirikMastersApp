@@ -11,8 +11,14 @@ public class TestCreator : MonoBehaviour
         Full
     }
 
+    public enum TestType
+    {
+        Height,
+        Colour
+    }
+
     public float narrowFOV = 90f;
-    public float numOfBuildings = 8f;
+    public int numOfBuildings = 8;
     public float heightOfBuildings = 50f; //Correct answer, in meters
     [Range (0,1)]
     public float spread = 0.2f; //Scaling the distribution away from the right answer.
@@ -28,12 +34,31 @@ public class TestCreator : MonoBehaviour
         float currentRotation = -degrees / 2f;
         Vector3 spawnDirection = Vector3.forward;
         float degreesBetweenBuildings = degrees / numOfBuildings;
+        float[] heights = generateHeights();
         for (int i = 0; i < numOfBuildings; i++)
         {
             spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
-            Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
+            GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
+            go.transform.localScale = new Vector3(1, heights[i], 1);
             currentRotation += degreesBetweenBuildings;
         }
+    }
+
+    private float[] generateHeights()
+    {
+        //TODO: This might have to be made better, maybe normalised sampling? Also need forced spread among all quadrants.
+        float[] retVals = new float[numOfBuildings];
+
+        int truePosition = Random.Range(0, numOfBuildings);
+
+        for (int i = 0; i < retVals.Length; i++)
+        {
+            retVals[i] = heightOfBuildings + Random.Range(-heightOfBuildings * spread, heightOfBuildings * spread);
+        }
+
+        retVals[truePosition] = heightOfBuildings;
+
+        return retVals;
     }
 
     public float FOVToFloat(FieldOfView fov)
