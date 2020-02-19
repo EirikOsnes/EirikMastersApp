@@ -27,11 +27,21 @@ public class TestCreator : MonoBehaviour
     public TestType testType = TestType.Height;
     public float distance = 30f; //Meters away from observation point.
     public GameObject buildingPrefab;
+    public Camera eventCamera;
+    public GameObject laserPointer;
 
     public void createBuildings()
     {
         if (testType == TestType.Height) createHeightTest();
         if (testType == TestType.Colour) createColourTest();
+    }
+
+    private void setRaycasterValues(GameObject go)
+    {
+        Canvas canvas = go.GetComponentInChildren<Canvas>();
+        OVRRaycaster raycaster = go.GetComponentInChildren<OVRRaycaster>();
+        if (canvas) canvas.worldCamera = eventCamera;
+        if (raycaster) raycaster.pointer = laserPointer;
     }
 
     private void createHeightTest()
@@ -50,6 +60,7 @@ public class TestCreator : MonoBehaviour
             GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
             go.transform.localScale = new Vector3(1, heights[i], 1);
             currentRotation += degreesBetweenBuildings;
+            setRaycasterValues(go);
         }
     }
 
@@ -79,7 +90,7 @@ public class TestCreator : MonoBehaviour
                 mats[j] = myMaterial;
             }
             renderer.materials = mats;
-
+            setRaycasterValues(go);
         }
     }
 
