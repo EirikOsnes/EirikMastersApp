@@ -862,8 +862,8 @@ namespace UnityEngine.EventSystems
 #if UNITY_ANDROID && !UNITY_EDITOR
             // On Gear VR the mouse button events correspond to touch pad events. We only use these as gaze pointer clicks
             // on Gear VR because on PC the mouse clicks are used for actual mouse pointer interactions.
-            pressed |= Input.GetMouseButtonDown(0);
-            released |= Input.GetMouseButtonUp(0);
+            // pressed |= Input.GetMouseButtonDown(0);
+            // released |= Input.GetMouseButtonUp(0);
 #endif
 
             if (pressed && released)
