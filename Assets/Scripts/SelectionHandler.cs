@@ -1,5 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
+using System.IO;
+using System.Text;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
@@ -15,6 +18,18 @@ public class SelectionHandler : MonoBehaviour
     private void Start()
     {
         assignButtonParameters();
+        try {
+            FileStream fs = File.Create(Application.persistentDataPath + "/test.txt");
+            text.text = Application.persistentDataPath + "./Data/test.txt";
+            var data = "falcon\nhawk\nforest\ncloud\nsky";
+            byte[] bytes = Encoding.UTF8.GetBytes(data);
+            fs.Write(bytes, 0, bytes.Length);
+            text.text += "\n Ran successfully";
+        } catch (Exception e)
+        {
+            text.text = e.Message;
+        }
+        
     }
 
     public void OnBuildingClick(GameObject go)
