@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,7 +24,8 @@ public class Test : MonoBehaviour
 
     public void generateID()
     {
-
+        ID = TestType.ToString();
+        ID += "-" + Guid.NewGuid().ToString().Remove(8);
     }
 
     //Run Methods

@@ -55,7 +55,7 @@ public class TestCreator : MonoBehaviour
         float degreesBetweenBuildings = degrees / numOfBuildings;
         int correctIndex = 0;
 
-        float[] values = generateHeights(ref correctIndex);
+        float[] values = generateValues(ref correctIndex);
         for (int i = 0; i < numOfBuildings; i++)
         {
             Vector3 spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
@@ -87,10 +87,11 @@ public class TestCreator : MonoBehaviour
         }
 
         Test testComponent = container.AddComponent<Test>();
-        testComponent.generateID();
-        testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
         testComponent.TestType = testType;
         testComponent.FieldOfView = fieldOfView;
+        testComponent.generateID();
+        container.name = testComponent.ID;
+        testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
         testComponent.MinValue = values.Min();
         testComponent.MaxValue = values.Max();
         testComponent.Spread = spread;
