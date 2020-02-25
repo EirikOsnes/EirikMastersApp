@@ -88,7 +88,7 @@ public class TestCreator : MonoBehaviour
 
         Test testComponent = container.AddComponent<Test>();
         testComponent.TestType = testType;
-        testComponent.FieldOfView = fieldOfView;
+        testComponent.setFOV(fieldOfView, degrees);
         testComponent.generateID();
         container.name = testComponent.ID;
         testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);

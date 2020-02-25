@@ -9,8 +9,9 @@ public class TestData
 {
 
     private Test currentTest;
+    public string TestID;
     public float TimeUsed;
-    public float TotalRotation; //Sum of all head rotation done
+    public float AggregatedRotation; //Sum of all head rotation done
     public float DegreesUsed; //Total of the 360 degrees viewed
     public TestCreator.TestType TestType;
     public TestCreator.FieldOfView FieldOfView;
@@ -28,8 +29,25 @@ public class TestData
     public TestData (Test test)
     {
         currentTest = test;
+        pollData();
     }
 
-
+    private void pollData()
+    {
+        TestID = currentTest.ID;
+        TimeUsed = currentTest.TimeUsed;
+        AggregatedRotation = currentTest.AggregatedRotation;
+        DegreesUsed = currentTest.getDegreesUsed();
+        TestType = currentTest.TestType;
+        FieldOfView = currentTest.FieldOfView;
+        CorrectChosen = currentTest.IsCorrectChosen();
+        CorrectValue = currentTest.GetCorrectValue();
+        ChosenValue = (CorrectChosen) ? CorrectValue : currentTest.GetSelectedValue();
+        CorrectAngle = currentTest.GetCorrectRotation();
+        ChosenAngle = currentTest.GetSelectedRotation();
+        TimeAfterObserved = currentTest.TimeAfterObserved;
+        MinValue = currentTest.MinValue;
+        MaxValue = currentTest.MaxValue;
+    }
 
 }
