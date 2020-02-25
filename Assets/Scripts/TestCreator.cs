@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class TestCreator : MonoBehaviour
 {
@@ -29,11 +30,11 @@ public class TestCreator : MonoBehaviour
     public GameObject buildingPrefab;
     public Camera eventCamera;
     public GameObject laserPointer;
+    public bool stripColours;
 
     public void createBuildings()
     {
-        if (testType == TestType.Height) createHeightTest();
-        if (testType == TestType.Colour) createColourTest();
+        createTest();
     }
 
     private void setRaycasterValues(GameObject go)
@@ -44,86 +45,82 @@ public class TestCreator : MonoBehaviour
         if (raycaster) raycaster.pointer = laserPointer;
     }
 
-    private void createHeightTest()
+    private void createTest()
     {
-        GameObject container = new GameObject("HeightTest");
+        GameObject container = new GameObject();
+
         container.transform.parent = this.transform;
         float degrees = FOVToFloat(fieldOfView);
         float currentRotation = -degrees / 2f;
-        Vector3 spawnDirection = Vector3.forward;
         float degreesBetweenBuildings = degrees / numOfBuildings;
+        int correctIndex = 0;
 
-        float[] heights = generateHeights();
+        float[] values = generateHeights(ref correctIndex);
         for (int i = 0; i < numOfBuildings; i++)
         {
-            spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
+            Vector3 spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
             GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
-            go.transform.localScale = new Vector3(1, heights[i], 1);
-            currentRotation += degreesBetweenBuildings;
-            setRaycasterValues(go);
-        }
-    }
-
-    private void createColourTest()
-    {
-        GameObject container = new GameObject("ColourTest");
-        container.transform.parent = this.transform;
-        float degrees = FOVToFloat(fieldOfView);
-        float currentRotation = -degrees / 2f;
-        Vector3 spawnDirection = Vector3.forward;
-        float degreesBetweenBuildings = degrees / numOfBuildings;
-
-        float[] colours = generateColours();
-        for (int i = 0; i < numOfBuildings; i++)
-        {
-            spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
-            GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
-            go.transform.localScale = new Vector3(1, heightOfBuildings, 1);
+            go.AddComponent<Building>();
+            go.transform.localScale = new Vector3(1, (testType == TestType.Height) ? values[i] : heightOfBuildings, 1);
             currentRotation += degreesBetweenBuildings;
 
-            Renderer renderer = go.GetComponentInChildren<Renderer>();
-            Material[] mats = new Material[renderer.sharedMaterials.Length];
-            for (int j = 0; j < renderer.sharedMaterials.Length; j++)
+            if (testType == TestType.Colour || stripColours)
             {
-                Material myMaterial = new Material(Shader.Find("Standard"));
-                myMaterial.color = new Color(colours[i]/255, colours[i]/255, colours[i]/255);
-                mats[j] = myMaterial;
+                Renderer renderer = go.GetComponentInChildren<Renderer>();
+                Material[] mats = new Material[renderer.sharedMaterials.Length];
+                for (int j = 0; j < renderer.sharedMaterials.Length; j++)
+                {
+                    Material myMaterial = new Material(Shader.Find("Standard"));
+                    if (testType == TestType.Colour)
+                    {
+                        myMaterial.color = new Color(values[i] / 255, values[i] / 255, values[i] / 255);
+                    } else
+                    {
+                        myMaterial.color = new Color(greyScaleColour / 255, greyScaleColour / 255, greyScaleColour / 255);
+                    }
+                    mats[j] = myMaterial;
+                }
+                renderer.materials = mats;
             }
-            renderer.materials = mats;
+
             setRaycasterValues(go);
         }
+
+        Test testComponent = container.AddComponent<Test>();
+        testComponent.generateID();
+        testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
+        testComponent.TestType = testType;
+        testComponent.FieldOfView = fieldOfView;
+        testComponent.MinValue = values.Min();
+        testComponent.MaxValue = values.Max();
+        testComponent.Spread = spread;
     }
 
-    private float[] generateColours()
+    
+
+    private float[] generateValues(ref int pos)
     {
         //TODO: This might have to be made better, maybe normalised sampling? Also need forced spread among all quadrants.
         float[] retVals = new float[numOfBuildings];
 
         int truePosition = Random.Range(0, numOfBuildings);
 
-        for (int i = 0; i < retVals.Length; i++)
+        if(testType == TestType.Colour) { 
+            for (int i = 0; i < retVals.Length; i++)
+            {
+                retVals[i] = greyScaleColour + Random.Range(-128 * spread, 128 * spread);
+            }
+
+            retVals[truePosition] = greyScaleColour;
+        } else
         {
-            retVals[i] = greyScaleColour + Random.Range(- 128 * spread, 128 * spread);
+            for (int i = 0; i < retVals.Length; i++)
+            {
+                retVals[i] = heightOfBuildings + Random.Range(-heightOfBuildings * spread, heightOfBuildings * spread);
+            }
+
+            retVals[truePosition] = heightOfBuildings;
         }
-
-        retVals[truePosition] = greyScaleColour;
-
-        return retVals;
-    }
-
-    private float[] generateHeights()
-    {
-        //TODO: This might have to be made better, maybe normalised sampling? Also need forced spread among all quadrants.
-        float[] retVals = new float[numOfBuildings];
-
-        int truePosition = Random.Range(0, numOfBuildings);
-
-        for (int i = 0; i < retVals.Length; i++)
-        {
-            retVals[i] = heightOfBuildings + Random.Range(-heightOfBuildings * spread, heightOfBuildings * spread);
-        }
-
-        retVals[truePosition] = heightOfBuildings;
 
         return retVals;
     }

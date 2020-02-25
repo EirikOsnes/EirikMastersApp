@@ -2725,7 +2725,7 @@ MonoBehaviour:
     m_BestFit: 0
     m_MinSize: 1
     m_MaxSize: 300
-    m_Alignment: 1
+    m_Alignment: 0
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
@@ -4614,8 +4614,8 @@ MonoBehaviour:
   heightOfBuildings: 50
   greyScaleColour: 80
   spread: 0.24
-  fieldOfView: 0
-  testType: 0
+  fieldOfView: 1
+  testType: 1
   distance: 60
   buildingPrefab: {fileID: 7672595835410023821, guid: 5e2a5cb3070beaf4299d1d9208d740f2,
     type: 3}
