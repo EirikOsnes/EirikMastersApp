@@ -44,6 +44,7 @@ public class Test : MonoBehaviour
         this.degrees = degrees;
     }
 
+
     //Get Methods
     public float getDegreesUsed()
     {
@@ -62,6 +63,7 @@ public class Test : MonoBehaviour
 
     public float GetSelectedRotation()
     {
+        if (selected == null) return -1;
         return selected.transform.rotation.y;
     }
 
@@ -72,6 +74,7 @@ public class Test : MonoBehaviour
 
     public float GetSelectedValue()
     {
+        if (selected == null) return -1;
         return getValueFromBuilding(selected);
     }
 
@@ -122,9 +125,9 @@ public class Test : MonoBehaviour
         testStarted = true;
     }
 
-    public void setSelected(GameObject selected)
+    public void SetSelected(GameObject go)
     {
-        this.selected = selected;
+        selected = go;
     }
 
     public void StartTimer()
@@ -136,5 +139,15 @@ public class Test : MonoBehaviour
     {
         TimeUsed = Time.time - startTime;
         TimeAfterObserved = Time.time - observedTime;
+    }
+
+    public float GetCurrentTime()
+    {
+        return Time.time - startTime;
+    }
+
+    public float GetCurrentTimeSinceObserved()
+    {
+        return Math.Max(0, Time.time - observedTime);
     }
 }

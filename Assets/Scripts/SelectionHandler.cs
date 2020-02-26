@@ -12,33 +12,22 @@ public class SelectionHandler : MonoBehaviour
 
     public Text text;
     public GameObject selectionMarker;
-    private GameObject currentSelected;
     private GameObject selector;
+    private Logger logger;
 
     private void Start()
     {
+        logger = GetComponent<Logger>();
         assignButtonParameters();
-        try {
-            FileStream fs = File.Create(Application.persistentDataPath + "/test.txt");
-            text.text = Application.persistentDataPath + "./Data/test.txt";
-            var data = "falcon\nhawk\nforest\ncloud\nsky";
-            byte[] bytes = Encoding.UTF8.GetBytes(data);
-            fs.Write(bytes, 0, bytes.Length);
-            text.text += "\n Ran successfully";
-        } catch (Exception e)
-        {
-            text.text = e.Message;
-        }
-        
     }
 
     public void OnBuildingClick(GameObject go)
     {
-        currentSelected = go;
-        text.text = text.text + "\n Building Clicked: Height = " + go.transform.lossyScale.y;
-        GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(-90, 0, 0));
-        if(selector != null) Destroy(selector);
-        selector = newSelector;
+            GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(-90, 0, 0));
+            if (selector != null) Destroy(selector);
+            selector = newSelector;
+            Test myTest = go.GetComponentInParent<Test>();
+            myTest.SetSelected(go);
     }
 
     public void assignButtonParameters()
