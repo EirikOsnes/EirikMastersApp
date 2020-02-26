@@ -9,7 +9,7 @@ public class Test : MonoBehaviour
     public TestCreator.TestType TestType;
     public TestCreator.FieldOfView FieldOfView;
     private GameObject selected;
-    private GameObject correct;
+    public GameObject correct;
     public float MinValue;
     public float MaxValue;
     public float Spread;
@@ -18,11 +18,13 @@ public class Test : MonoBehaviour
     public float TimeUsed;
     private bool testStarted = false;
     public float AggregatedRotation;
-    private float minAngle;
-    private float maxAngle;
+    public float leftAngle = 360;
+    public float rightAngle;
+    private float leftMinAngle = 360;
+    private float leftMaxAngle = 360;
     private float lastRotation;
     GameObject forwardDirection;
-    private float degrees;
+    public float degrees;
     public float TimeAfterObserved;
 
     //Creation Methods
@@ -38,7 +40,7 @@ public class Test : MonoBehaviour
         ID += "-" + Guid.NewGuid().ToString().Remove(8);
     }
 
-    public void setFOV(TestCreator.FieldOfView fov, float degrees)
+    public void SetFOV(TestCreator.FieldOfView fov, float degrees)
     {
         FieldOfView = fov;
         this.degrees = degrees;
@@ -46,9 +48,9 @@ public class Test : MonoBehaviour
 
 
     //Get Methods
-    public float getDegreesUsed()
+    public float GetDegreesUsed()
     {
-        return Math.Abs(maxAngle - minAngle);
+        return 360 - (leftAngle-rightAngle);
     }
 
     public bool IsCorrectChosen()
@@ -58,13 +60,13 @@ public class Test : MonoBehaviour
 
     public float GetCorrectRotation()
     {
-        return correct.transform.rotation.y;
+        return (correct.transform.rotation.eulerAngles.y);
     }
 
     public float GetSelectedRotation()
     {
         if (selected == null) return -1;
-        return selected.transform.rotation.y;
+        return (selected.transform.rotation.eulerAngles.y);
     }
 
     public float GetCorrectValue()
@@ -99,18 +101,34 @@ public class Test : MonoBehaviour
             //The running checks for this Test should only run when the Test has started.
 
             //Track changes in head rotation.
-            float currentRotation = forwardDirection.transform.rotation.y;
-            minAngle = Math.Min(minAngle, currentRotation);
-            maxAngle = Math.Max(maxAngle, currentRotation);
-            AggregatedRotation += Math.Abs(currentRotation - lastRotation);
-            lastRotation = currentRotation;
+            float currentRotation = forwardDirection.transform.rotation.eulerAngles.y;
+            float diff = angleDiff(lastRotation, currentRotation);
+            if (diff < 0) //Head moved towards the right
+            {
+                if (currentRotation > rightAngle && currentRotation < leftAngle)
+                {
+                    rightAngle = currentRotation;
+                }
+            } else
+            {
+                if (currentRotation < leftAngle && currentRotation > rightAngle)
+                {
+                    leftAngle = currentRotation;
+                }
+            }
+            
+            if (Math.Abs(diff) > 0.5)
+            {
+                AggregatedRotation += diff;
+                lastRotation = currentRotation;
+            }
 
             //Check to see if correct building is within vision.
             //Possible that the angles are inverted between headset and buildings, so must use negative.
-            if(observedTime == -1f)
+            if(observedTime < 0)
             {
-                if(currentRotation + degrees/2 > correct.transform.rotation.y 
-                    && currentRotation - degrees / 2 < correct.transform.rotation.y)
+                float delta = angleDiff(currentRotation, GetCorrectRotation());
+                if (Math.Abs(delta) <= degrees/2)
                 {
                     observedTime = Time.time;
                 }
@@ -148,6 +166,21 @@ public class Test : MonoBehaviour
 
     public float GetCurrentTimeSinceObserved()
     {
-        return Math.Max(0, Time.time - observedTime);
+        return (observedTime == -1) ? -1 : Time.time - observedTime;
+    }
+
+    public float __GetCurrentRotation()
+    {
+        return forwardDirection.transform.rotation.eulerAngles.y;
+    }
+
+    public float __GetDegrees()
+    {
+        return degrees;
+    }
+
+    private float angleDiff(float a1, float a2)
+    {
+        return (a1 - a2 + 180 + 360) % 360 - 180;
     }
 }

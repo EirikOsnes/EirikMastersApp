@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,13 +31,22 @@ public class TestRunner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        logger.ClearLog();
-        logger.Log("Time used: " + currentTest.GetCurrentTime());
-        logger.Log("Since Observed: " + currentTest.GetCurrentTimeSinceObserved());
-        logger.Log("Selected value: " + currentTest.GetSelectedValue());
-        logger.Log("Selected Rotation: " + currentTest.GetSelectedRotation());
-        logger.Log("Aggregated Rotation: " + currentTest.AggregatedRotation);
-        logger.Log("Degrees Used: " + currentTest.getDegreesUsed());
+        try
+        {
+            logger.ClearLog();
+            logger.Log("Time used: " + currentTest.GetCurrentTime());
+            logger.Log("Since Observed: " + currentTest.GetCurrentTimeSinceObserved());
+            logger.Log("Selected value: " + currentTest.GetSelectedValue());
+            logger.Log("Selected Rotation: " + currentTest.GetSelectedRotation());
+            logger.Log("Aggregated Rotation: " + currentTest.AggregatedRotation);
+            logger.Log("Degrees Used: " + currentTest.GetDegreesUsed());
+            float currentRotation = currentTest.__GetCurrentRotation();
+            logger.Log("Current: " + currentRotation);
+            logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
+        } catch (Exception e)
+        {
+            logger.Log(e.Message);
+        }
     }
 
 }

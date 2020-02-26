@@ -37,7 +37,7 @@ public class TestData
         TestID = currentTest.ID;
         TimeUsed = currentTest.TimeUsed;
         AggregatedRotation = currentTest.AggregatedRotation;
-        DegreesUsed = currentTest.getDegreesUsed();
+        DegreesUsed = currentTest.GetDegreesUsed();
         TestType = currentTest.TestType;
         FieldOfView = currentTest.FieldOfView;
         CorrectChosen = currentTest.IsCorrectChosen();

@@ -88,7 +88,7 @@ public class TestCreator : MonoBehaviour
 
         Test testComponent = container.AddComponent<Test>();
         testComponent.TestType = testType;
-        testComponent.setFOV(fieldOfView, degrees);
+        testComponent.SetFOV(fieldOfView, narrowFOV);
         testComponent.generateID();
         container.name = testComponent.ID;
         testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
@@ -104,7 +104,7 @@ public class TestCreator : MonoBehaviour
         //TODO: This might have to be made better, maybe normalised sampling? Also need forced spread among all quadrants.
         float[] retVals = new float[numOfBuildings];
 
-        int truePosition = Random.Range(0, numOfBuildings);
+        pos = Random.Range(0, numOfBuildings);
 
         if(testType == TestType.Colour) { 
             for (int i = 0; i < retVals.Length; i++)
@@ -112,7 +112,7 @@ public class TestCreator : MonoBehaviour
                 retVals[i] = greyScaleColour + Random.Range(-128 * spread, 128 * spread);
             }
 
-            retVals[truePosition] = greyScaleColour;
+            retVals[pos] = greyScaleColour;
         } else
         {
             for (int i = 0; i < retVals.Length; i++)
@@ -120,7 +120,7 @@ public class TestCreator : MonoBehaviour
                 retVals[i] = heightOfBuildings + Random.Range(-heightOfBuildings * spread, heightOfBuildings * spread);
             }
 
-            retVals[truePosition] = heightOfBuildings;
+            retVals[pos] = heightOfBuildings;
         }
 
         return retVals;
