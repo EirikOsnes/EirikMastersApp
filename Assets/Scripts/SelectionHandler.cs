@@ -12,6 +12,7 @@ public class SelectionHandler : MonoBehaviour
 
     public Text text;
     public GameObject selectionMarker;
+    public LaserPointer pointer;
     private GameObject selector;
     private Logger logger;
 
@@ -23,11 +24,14 @@ public class SelectionHandler : MonoBehaviour
 
     public void OnBuildingClick(GameObject go)
     {
-            GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(-90, 0, 0));
-            if (selector != null) Destroy(selector);
-            selector = newSelector;
-            Test myTest = go.GetComponentInParent<Test>();
-            myTest.SetSelected(go);
+        //Click only if laserpointer is activated
+        if (pointer.laserBeamBehavior == LaserPointer.LaserBeamBehavior.Off) return;
+
+        GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(-90, 0, 0));
+        if (selector != null) Destroy(selector);
+        selector = newSelector;
+        Test myTest = go.GetComponentInParent<Test>();
+        myTest.SetSelected(go);
     }
 
     public void assignButtonParameters()

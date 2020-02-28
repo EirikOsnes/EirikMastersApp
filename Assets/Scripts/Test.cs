@@ -119,7 +119,7 @@ public class Test : MonoBehaviour
             
             if (Math.Abs(diff) > 0.5)
             {
-                AggregatedRotation += diff;
+                AggregatedRotation += Math.Abs(diff);
                 lastRotation = currentRotation;
             }
 
