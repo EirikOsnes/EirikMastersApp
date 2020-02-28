@@ -33,10 +33,18 @@ public class Logger : MonoBehaviour
         Log("WriteToFile ran successfully");
     }
 
-    public void WriteTestToFile(Test test)
+    public void WriteTestToFile(TestPass tests)
     {
-        TestData data = new TestData(test);
-        //TODO: Save this as JSON.
+        try
+        {
+            string jsonString = JsonUtility.ToJson(tests);
+            Log(jsonString);
+            WriteToFile("/test.json", jsonString);
+        }
+        catch (System.Exception e)
+        {
+            Log(e.Message);
+        }
     }
 
 }

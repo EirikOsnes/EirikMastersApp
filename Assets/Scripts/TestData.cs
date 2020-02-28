@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
 /// This class has only purpose: To serve as a container for all the data that is to be logged for statistics.
 /// </summary>
+[Serializable]
 public class TestData
 {
 
@@ -48,6 +50,7 @@ public class TestData
         TimeAfterObserved = currentTest.TimeAfterObserved;
         MinValue = currentTest.MinValue;
         MaxValue = currentTest.MaxValue;
+        Spread = currentTest.Spread;
     }
 
 }
