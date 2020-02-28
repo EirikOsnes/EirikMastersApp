@@ -36,9 +36,9 @@ public class SelectionHandler : MonoBehaviour
 
     public void assignButtonParameters()
     {
-        Building[] buildings = FindObjectsOfType<Building>();
-        GameObject[] buildingGos = new GameObject[buildings.Length];
-        for (int i = 0; i < buildings.Length; i++)
+        List<Building> buildings = GetAllBuildings();
+        GameObject[] buildingGos = new GameObject[buildings.Count];
+        for (int i = 0; i < buildings.Count; i++)
         {
             buildingGos[i] = buildings[i].gameObject;
         }
@@ -51,5 +51,18 @@ public class SelectionHandler : MonoBehaviour
                 Debug.Log("Added Button call");
             }
         }
+    }
+
+    List<Building> GetAllBuildings()
+    {
+        List<Building> objectsInScene = new List<Building>();
+
+        foreach (Building b in Resources.FindObjectsOfTypeAll(typeof(Building)) as Building[])
+        {
+            if (/*!EditorUtility.IsPersistent(t.transform.root.gameObject) &&*/ !(b.hideFlags == HideFlags.NotEditable || b.hideFlags == HideFlags.HideAndDontSave))
+                objectsInScene.Add(b);
+        }
+
+        return objectsInScene;
     }
 }

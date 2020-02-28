@@ -108,11 +108,26 @@ public class OVRScreenFade : MonoBehaviour
         StartCoroutine(Fade(0,1));
     }
 
+    /// <summary>
+    /// Start a fade in
+    /// </summary>
+    public void FadeIn()
+    {
+        StartCoroutine(Fade(1, 0));
+    }
 
-	/// <summary>
-	/// Starts a fade in when a new level is loaded
-	/// </summary>
-	void OnLevelFinishedLoading(int level)
+    /// <summary>
+    /// Start a fade in and out
+    /// </summary>
+    public void FadeOutIn()
+    {
+        StartCoroutine(FadeOutInEnum());
+    }
+
+    /// <summary>
+    /// Starts a fade in when a new level is loaded
+    /// </summary>
+    void OnLevelFinishedLoading(int level)
 	{
 		StartCoroutine(Fade(1,0));
 	}
@@ -183,6 +198,29 @@ public class OVRScreenFade : MonoBehaviour
 			yield return new WaitForEndOfFrame();
 		}
 	}
+
+    /// <summary>
+    /// Fades alpha from 1.0 to 0.0
+    /// </summary>
+    IEnumerator FadeOutInEnum()
+    {
+        float elapsedTime = 0.0f;
+        while (elapsedTime < fadeTime*2)
+        {
+            elapsedTime += Time.deltaTime;
+            if(elapsedTime <= fadeTime)
+            {
+                currentAlpha = Mathf.Lerp(0, 1, Mathf.Clamp01(elapsedTime / fadeTime));
+            }
+            else
+            {
+                currentAlpha = Mathf.Lerp(1, 0, Mathf.Clamp01((elapsedTime-fadeTime) / fadeTime));
+            }
+            
+            SetMaterialAlpha();
+            yield return new WaitForEndOfFrame();
+        }
+    }
 
     /// <summary>
     /// Update material alpha. UI fade and the current fade due to fade in/out animations (or explicit control)

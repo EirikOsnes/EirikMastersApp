@@ -1,36 +1,39 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class TestRunner : MonoBehaviour
 {
 
-    Test[] tests;
+    List<Test> tests;
     Logger logger;
     Test currentTest;
+    public OVRInput.RawButton lockinButton;
+    OVRScreenFade screenFade;
 
     // Start is called before the first frame update
     void Start()
     {
-        tests = FindObjectsOfType<Test>();
-        if (tests.Length != 0)
+        tests = GetAllTests();
+        screenFade = FindObjectOfType<OVRScreenFade>();
+        if (tests.Count != 0)
         {
-            tests[0].gameObject.SetActive(true);
-            currentTest = tests[0];
-            tests[0].StartTest();
-            for (int i = 1; i < tests.Length; i++)
-            {
-                tests[i].gameObject.SetActive(false);
-            }
+            startTest(0);
         }
-
         logger = GetComponent<Logger>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        //Lock in the answer and transition to the next test.
+        if (OVRInput.GetUp(lockinButton))
+        {
+            startTest(UnityEngine.Random.Range(0, tests.Count));
+        }
+
         try
         {
             logger.ClearLog();
@@ -43,10 +46,46 @@ public class TestRunner : MonoBehaviour
             float currentRotation = currentTest.__GetCurrentRotation();
             logger.Log("Current: " + currentRotation);
             logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
-        } catch (Exception e)
+            logger.Log("Number of tests: " + tests.Count);
+        }
+        catch (Exception e)
         {
             logger.Log(e.Message);
         }
+    }
+
+    void startTest(int index)
+    {
+        StartCoroutine(WaitThenActivate(0.5f, index));
+    }
+
+    List<Test> GetAllTests()
+    {
+        List<Test> objectsInScene = new List<Test>();
+
+        foreach (Test t in Resources.FindObjectsOfTypeAll(typeof(Test)) as Test[])
+        {
+            if (/*!EditorUtility.IsPersistent(t.transform.root.gameObject) &&*/ !(t.hideFlags == HideFlags.NotEditable || t.hideFlags == HideFlags.HideAndDontSave))
+                objectsInScene.Add(t);
+        }
+
+        return objectsInScene;
+    }
+
+    IEnumerator WaitThenActivate(float waitTime, int index)
+    {
+        screenFade.FadeOut();
+        yield return new WaitForSeconds(screenFade.fadeTime);
+        tests[index].gameObject.SetActive(true);
+        currentTest = tests[index];
+        tests[index].StartTest();
+        for (int i = 0; i < tests.Count; i++)
+        {
+            if (i == index) continue;
+            tests[i].gameObject.SetActive(false);
+        }
+        yield return new WaitForSeconds(waitTime);
+        screenFade.FadeIn();
     }
 
 }
