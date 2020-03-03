@@ -25,6 +25,8 @@ public class TestRunner : MonoBehaviour
     private SelectionHandler selectionHandler;
     private GameObject realVal;
     private RunState state = RunState.NotBegun;
+    private OVRCameraRig cameraRig;
+    private GameObject playerController;
 
     // Start is called before the first frame update
     void Start()
@@ -38,6 +40,8 @@ public class TestRunner : MonoBehaviour
         screenFade = FindObjectOfType<OVRScreenFade>();
         selectionHandler = gameObject.GetComponent<SelectionHandler>();
         logger = GetComponent<Logger>();
+        cameraRig = FindObjectOfType<OVRCameraRig>();
+        playerController = GameObject.Find("OVRPlayerController");
     }
 
     // Update is called once per frame
@@ -45,7 +49,6 @@ public class TestRunner : MonoBehaviour
     {
         try
         {
-            // LogDebugInfo();
 
             if (state == RunState.TestRunning)
             {
@@ -59,7 +62,7 @@ public class TestRunner : MonoBehaviour
                     }
                     else
                     {
-                        EndTestPass();
+                        StartCoroutine(WaitThenActivate(0.5f, null, EndTestPass));
                     }
                 }
             }
@@ -87,6 +90,10 @@ public class TestRunner : MonoBehaviour
             {
 
             }
+
+            LogDebugInfo();
+
+
         }
         catch (Exception e)
         {
@@ -100,32 +107,36 @@ public class TestRunner : MonoBehaviour
     void LogDebugInfo()
     {
         logger.ClearLog();
-        logger.Log(state.ToString());
-        logger.Log("Time used: " + currentTest.GetCurrentTime());
-        logger.Log("Time used final: " + currentTest.TimeUsed);
-        logger.Log("Since Observed: " + currentTest.GetCurrentTimeSinceObserved());
-        logger.Log("Selected value: " + currentTest.GetSelectedValue());
-        logger.Log("Selected Rotation: " + currentTest.GetSelectedRotation());
-        logger.Log("Aggregated Rotation: " + currentTest.AggregatedRotation);
-        logger.Log("Degrees Used: " + currentTest.GetDegreesUsed());
-        float currentRotation = currentTest.__GetCurrentRotation();
-        logger.Log("Current: " + currentRotation);
-        logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
-        logger.Log("Number of tests: " + tests.Count);
+        //logger.Log(state.ToString());
+        //logger.Log("Time used: " + currentTest.GetCurrentTime());
+        //logger.Log("Time used final: " + currentTest.TimeUsed);
+        //logger.Log("Since Observed: " + currentTest.GetCurrentTimeSinceObserved());
+        //logger.Log("Selected value: " + currentTest.GetSelectedValue());
+        //logger.Log("Selected Rotation: " + currentTest.GetSelectedRotation());
+        //logger.Log("Aggregated Rotation: " + currentTest.AggregatedRotation);
+        //logger.Log("Degrees Used: " + currentTest.GetDegreesUsed());
+        //float currentRotation = currentTest.__GetCurrentRotation();
+        //logger.Log("Current: " + currentRotation);
+        logger.Log("P-cont: " + playerController.transform.position.ToString());
+        logger.Log("cea: " + cameraRig.centerEyeAnchor.position.ToString());
+        logger.Log("cam: " + cameraRig.transform.position.ToString());
+        //logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
+        //logger.Log("Number of tests: " + tests.Count);
     }
 
     void EndTest()
     {
         currentTest.EndTimer();
-        logger.Log(currentTest.ToString());
         testPass.tests.Add(new TestData(currentTest));
         tests.Remove(currentTest);
     }
 
-    void EndTestPass()
+    void EndTestPass(Test test)
     {
         logger.WriteTestToFile(testPass);
         state = RunState.Finished;
+        currentTest.gameObject.SetActive(false);
+        selectionHandler.DestroySelector();
     }
 
     void ShowRealVal(Test test)
@@ -144,12 +155,29 @@ public class TestRunner : MonoBehaviour
     {
         if (realVal != null) Destroy(realVal);
         test.gameObject.SetActive(true);
+        ResetPosition();
     }
 
     void StartTest(Test test)
     {
         test.StartTest();
         state = RunState.TestRunning;
+    }
+
+    void ResetPosition()
+    {
+        Transform cea = cameraRig.centerEyeAnchor;
+        Transform cam = cameraRig.transform;
+
+        float currentRotY = cea.eulerAngles.y;
+        float difference = 0 - currentRotY;
+        //cam.Rotate(0, difference, 0);
+        playerController.transform.Rotate(0, difference, 0);
+
+        Vector3 newPos = new Vector3(-playerController.transform.position.x, 0, -playerController.transform.position.z);
+        cam.transform.position += newPos;
+        //playerController.transform.position += newPos;
+
     }
 
     List<Test> GetAllTests()
