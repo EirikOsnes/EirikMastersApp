@@ -149,6 +149,7 @@ public class TestRunner : MonoBehaviour
         currentTest = test;
         realVal = Instantiate(test.GetCorrect(), new Vector3(0, 0, test.distance), Quaternion.identity);
         state = RunState.RealValue;
+        ResetPosition();
     }
 
     void PrepareTest(Test test)
