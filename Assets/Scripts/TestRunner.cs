@@ -7,6 +7,14 @@ using UnityEngine;
 public class TestRunner : MonoBehaviour
 {
 
+    public enum RunState
+    {
+        NotBegun,
+        RealValue,
+        TestRunning,
+        Finished
+    }
+
     List<Test> tests;
     Logger logger;
     Test currentTest;
@@ -14,6 +22,9 @@ public class TestRunner : MonoBehaviour
     OVRScreenFade screenFade;
     delegate void myMethod(Test t);
     public TestPass testPass;
+    private SelectionHandler selectionHandler;
+    private GameObject realVal;
+    private RunState state = RunState.NotBegun;
 
     // Start is called before the first frame update
     void Start()
@@ -25,78 +36,120 @@ public class TestRunner : MonoBehaviour
             test.gameObject.SetActive(false);
         }
         screenFade = FindObjectOfType<OVRScreenFade>();
-        if (tests.Count != 0)
-        {
-            StartCoroutine(WaitThenActivate(0f, tests[0], prepareTest, startTest, false));
-        }
+        selectionHandler = gameObject.GetComponent<SelectionHandler>();
         logger = GetComponent<Logger>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //Lock in the answer and transition to the next test.
-        if (OVRInput.GetUp(lockinButton))
+        try
         {
-            endTest();
-            if (tests.Count > 0)
+            // LogDebugInfo();
+
+            if (state == RunState.TestRunning)
             {
-                myMethod method = prepareTest;
-                myMethod secondMethod = startTest;
-                StartCoroutine(WaitThenActivate(0.5f, tests[UnityEngine.Random.Range(0, tests.Count)], method, startTest));
-            } else
+                //Lock in the answer and transition to the next test.
+                if (OVRInput.GetUp(lockinButton))
+                {
+                    EndTest();
+                    if (tests.Count > 0)
+                    {
+                        StartCoroutine(WaitThenActivate(0.5f, tests[UnityEngine.Random.Range(0, tests.Count)], ShowRealVal, null));
+                    }
+                    else
+                    {
+                        EndTestPass();
+                    }
+                }
+            }
+
+            if (state == RunState.RealValue)
             {
-                endTestPass();
+                if (OVRInput.GetUp(lockinButton))
+                {
+                    StartCoroutine(WaitThenActivate(0.5f, currentTest, PrepareTest, StartTest));
+                }
+            }
+
+            if (state == RunState.NotBegun)
+            {
+                if (OVRInput.GetUp(lockinButton))
+                {
+                    if (tests.Count != 0)
+                    {
+                        StartCoroutine(WaitThenActivate(0f, tests[0], ShowRealVal));
+                    }
+                }
+            }
+
+            if (state == RunState.Finished)
+            {
+
             }
         }
+        catch (Exception e)
+        {
+            logger.Log("Exception caught: " + e.GetType().Name);
+            logger.Log(e.Message);
+            logger.Log(e.StackTrace);
+        }
 
-        //try
-        //{
-        //    logger.ClearLog();
-        //    logger.Log("Time used: " + currentTest.GetCurrentTime());
-        //    logger.Log("Time used final: " + currentTest.TimeUsed);
-        //    logger.Log("Since Observed: " + currentTest.GetCurrentTimeSinceObserved());
-        //    logger.Log("Selected value: " + currentTest.GetSelectedValue());
-        //    logger.Log("Selected Rotation: " + currentTest.GetSelectedRotation());
-        //    logger.Log("Aggregated Rotation: " + currentTest.AggregatedRotation);
-        //    logger.Log("Degrees Used: " + currentTest.GetDegreesUsed());
-        //    float currentRotation = currentTest.__GetCurrentRotation();
-        //    logger.Log("Current: " + currentRotation);
-        //    logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
-        //    logger.Log("Number of tests: " + tests.Count);
-        //}
-        //catch (Exception e)
-        //{
-        //    logger.Log(e.Message);
-        //    logger.Log(e.StackTrace);
-        //}
     }
 
-    void endTest()
+    void LogDebugInfo()
+    {
+        logger.ClearLog();
+        logger.Log(state.ToString());
+        logger.Log("Time used: " + currentTest.GetCurrentTime());
+        logger.Log("Time used final: " + currentTest.TimeUsed);
+        logger.Log("Since Observed: " + currentTest.GetCurrentTimeSinceObserved());
+        logger.Log("Selected value: " + currentTest.GetSelectedValue());
+        logger.Log("Selected Rotation: " + currentTest.GetSelectedRotation());
+        logger.Log("Aggregated Rotation: " + currentTest.AggregatedRotation);
+        logger.Log("Degrees Used: " + currentTest.GetDegreesUsed());
+        float currentRotation = currentTest.__GetCurrentRotation();
+        logger.Log("Current: " + currentRotation);
+        logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
+        logger.Log("Number of tests: " + tests.Count);
+    }
+
+    void EndTest()
     {
         currentTest.EndTimer();
+        logger.Log(currentTest.ToString());
         testPass.tests.Add(new TestData(currentTest));
         tests.Remove(currentTest);
     }
 
-    void endTestPass()
+    void EndTestPass()
     {
         logger.WriteTestToFile(testPass);
+        state = RunState.Finished;
     }
 
-    void prepareTest(Test test)
+    void ShowRealVal(Test test)
     {
+        selectionHandler.DestroySelector();
         if (currentTest != null)
         {
             currentTest.gameObject.SetActive(false);
         }
-        test.gameObject.SetActive(true);
         currentTest = test;
+        realVal = Instantiate(test.GetCorrect(), new Vector3(0, 0, test.distance), Quaternion.identity);
+        state = RunState.RealValue;
     }
 
-    void startTest(Test test)
+    void PrepareTest(Test test)
+    {
+        if (realVal != null) Destroy(realVal);
+        test.gameObject.SetActive(true);
+    }
+
+    void StartTest(Test test)
     {
         test.StartTest();
+        state = RunState.TestRunning;
     }
 
     List<Test> GetAllTests()

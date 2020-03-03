@@ -28,7 +28,7 @@ public class SelectionHandler : MonoBehaviour
         if (pointer.laserBeamBehavior == LaserPointer.LaserBeamBehavior.Off) return;
 
         GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(-90, 0, 0));
-        if (selector != null) Destroy(selector);
+        DestroySelector();
         selector = newSelector;
         Test myTest = go.GetComponentInParent<Test>();
         myTest.SetSelected(go);
@@ -51,6 +51,11 @@ public class SelectionHandler : MonoBehaviour
                 Debug.Log("Added Button call");
             }
         }
+    }
+
+    public void DestroySelector()
+    {
+        if (selector != null) Destroy(selector);
     }
 
     List<Building> GetAllBuildings()

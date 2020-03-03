@@ -26,6 +26,7 @@ public class Test : MonoBehaviour
     GameObject forwardDirection;
     public float degrees;
     public float TimeAfterObserved;
+    public float distance;
 
     //Creation Methods
 
@@ -82,6 +83,8 @@ public class Test : MonoBehaviour
 
     private float getValueFromBuilding(GameObject go)
     {
+        if (go == null) throw new NullReferenceException("Gameobject is null");
+        if (go.transform == null) throw new NullReferenceException("Transform is null");
         if(TestType == TestCreator.TestType.Height)
         {
             return go.transform.lossyScale.y;
@@ -89,6 +92,9 @@ public class Test : MonoBehaviour
         else
         {
             Renderer r = go.GetComponentInChildren<Renderer>();
+            if (r == null) throw new NullReferenceException("Renderer is null");
+            if (r.materials[0] == null) throw new NullReferenceException("Material is null");
+            if (r.materials[0].color == null) throw new NullReferenceException("Color is null");
             return r.materials[0].color.r * 255;
         }
     }
@@ -182,5 +188,10 @@ public class Test : MonoBehaviour
     private float angleDiff(float a1, float a2)
     {
         return (a1 - a2 + 180 + 360) % 360 - 180;
+    }
+
+    public GameObject GetCorrect()
+    {
+        return correct;
     }
 }

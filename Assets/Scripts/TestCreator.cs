@@ -95,6 +95,7 @@ public class TestCreator : MonoBehaviour
         testComponent.MinValue = values.Min();
         testComponent.MaxValue = values.Max();
         testComponent.Spread = spread;
+        testComponent.distance = distance;
     }
 
     

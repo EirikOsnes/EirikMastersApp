@@ -26,13 +26,16 @@ public class TestData
     public float MinValue;
     public float MaxValue;
     public float Spread;
+    private Logger logger;
     
 
-    public TestData (Test test)
+    public TestData (Test test, Logger logger = null)
     {
+        this.logger = logger;
         currentTest = test;
         pollData();
     }
+
 
     private void pollData()
     {
