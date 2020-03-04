@@ -20,8 +20,8 @@ public class TestCreator : MonoBehaviour
 
     public float narrowFOV = 90f;
     public int numOfBuildings = 8;
-    public float heightOfBuildings = 50f; //Correct answer, in meters
-    public float greyScaleColour = 80f; //Correct answer, only for Colour TestType
+    public float heightOfBuildings = 50f; //Default height, for colour tests
+    public float greyScaleColour = 80f; //Default colour, for height tests
     [Range (0,1)]
     public float spread = 0.2f; //Scaling the distribution away from the right answer.
     public FieldOfView fieldOfView = FieldOfView.Full;
@@ -31,13 +31,18 @@ public class TestCreator : MonoBehaviour
     public Camera eventCamera;
     public GameObject laserPointer;
     public bool stripColours;
+    [Range(1,4)]
+    public int quadrant = 1;
+    public bool randomizeQuadrant = false;
+    public float minValue = 20f;
+    public float maxValue = 60f;
 
-    public void createBuildings()
+    public void CreateBuildings()
     {
-        createTest();
+        CreateTest();
     }
 
-    private void setRaycasterValues(GameObject go)
+    private void SetRaycasterValues(GameObject go)
     {
         Canvas canvas = go.GetComponentInChildren<Canvas>();
         OVRRaycaster raycaster = go.GetComponentInChildren<OVRRaycaster>();
@@ -45,17 +50,19 @@ public class TestCreator : MonoBehaviour
         if (raycaster) raycaster.pointer = laserPointer;
     }
 
-    private void createTest()
+    private void CreateTest()
     {
         GameObject container = new GameObject();
-
         container.transform.parent = this.transform;
+        if (randomizeQuadrant) quadrant = Random.Range(1, 5);
         float degrees = FOVToFloat(fieldOfView);
-        float currentRotation = -degrees / 2f;
         float degreesBetweenBuildings = degrees / numOfBuildings;
-        int correctIndex = 0;
+        float currentRotation = CalculateStartRotation(degreesBetweenBuildings);
+        int correctIndex = GenerateIndex();
+        Debug.Log("Correct Index: " + correctIndex);
+        GameObject correct;
 
-        float[] values = generateValues(ref correctIndex);
+        float[] values = GenerateValues(correctIndex);
         for (int i = 0; i < numOfBuildings; i++)
         {
             Vector3 spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
@@ -83,7 +90,8 @@ public class TestCreator : MonoBehaviour
                 renderer.materials = mats;
             }
 
-            setRaycasterValues(go);
+            SetRaycasterValues(go);
+            if (i == correctIndex) correct = go;
         }
 
         Test testComponent = container.AddComponent<Test>();
@@ -96,35 +104,81 @@ public class TestCreator : MonoBehaviour
         testComponent.MaxValue = values.Max();
         testComponent.Spread = spread;
         testComponent.distance = distance;
+        testComponent.Quadrant = quadrant;
     }
 
-    
-
-    private float[] generateValues(ref int pos)
+    private float[] GenerateValues(int pos)
     {
         //TODO: This might have to be made better, maybe normalised sampling? Also need forced spread among all quadrants.
         float[] retVals = new float[numOfBuildings];
 
-        pos = Random.Range(0, numOfBuildings);
-
         if(testType == TestType.Colour) { 
             for (int i = 0; i < retVals.Length; i++)
             {
-                retVals[i] = greyScaleColour + Random.Range(-128 * spread, 128 * spread);
+                //retVals[i] = greyScaleColour + Random.Range(-128 * spread, 128 * spread);
+                retVals[i] = Random.Range(minValue, maxValue);
             }
 
-            retVals[pos] = greyScaleColour;
+            //retVals[pos] = greyScaleColour;
         } else
         {
             for (int i = 0; i < retVals.Length; i++)
             {
-                retVals[i] = heightOfBuildings + Random.Range(-heightOfBuildings * spread, heightOfBuildings * spread);
+                //retVals[i] = heightOfBuildings + Random.Range(-heightOfBuildings * spread, heightOfBuildings * spread);
+                retVals[i] = Random.Range(minValue, maxValue);
             }
 
-            retVals[pos] = heightOfBuildings;
+            //retVals[pos] = heightOfBuildings;
         }
 
         return retVals;
+    }
+
+    private int GenerateIndex()
+    {
+        //No natural quadrants allowed
+        if (fieldOfView == FieldOfView.Narrow || numOfBuildings % 4 != 0) return Random.Range(0, numOfBuildings);
+        int buildingsPerQuad = (int)System.Math.Ceiling(numOfBuildings / 4f);
+        //No overlap between quadrants
+        if (buildingsPerQuad % 2 == 1)
+        {
+            int indexInQuad = Random.Range(0, buildingsPerQuad);
+            return (quadrant - 1) * buildingsPerQuad + indexInQuad;
+        }
+        else
+        {
+            //There is overlap between quadrants, so the first and last building must have half the weight.
+            int virtualBuildingNum = (buildingsPerQuad - 2 + 1 /*Because of one added from overlap*/) * 2 + 2;
+            int virtualIndex = Random.Range(0, virtualBuildingNum);
+            int indexInQuad;
+            if (virtualIndex == 0) indexInQuad = 0;
+            else if (virtualIndex == virtualBuildingNum - 1) indexInQuad = buildingsPerQuad - 1 + 1;
+            else
+            {
+                indexInQuad = (virtualIndex + 1) / 2;
+            }
+
+            if (quadrant == 4 && indexInQuad == buildingsPerQuad) return 0; //Randomising the first position from the 4th quad.
+
+            return (quadrant - 1) * buildingsPerQuad + indexInQuad;
+        }
+    }
+
+    private float CalculateStartRotation(float degsBetweenBuildings)
+    {
+
+        if (fieldOfView == FieldOfView.Narrow || numOfBuildings % 4 != 0) return -narrowFOV / 2f;
+        int buildingsPerQuad = (int)System.Math.Ceiling(numOfBuildings / 4f);
+
+        //No overlap between quadrants
+        if (buildingsPerQuad % 2 == 1)
+        {            
+            return -(buildingsPerQuad/2)*degsBetweenBuildings;
+        }
+        else
+        {
+            return -((buildingsPerQuad + 1) / 2) * degsBetweenBuildings;
+        }
     }
 
     public float FOVToFloat(FieldOfView fov)

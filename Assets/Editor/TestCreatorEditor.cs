@@ -11,7 +11,7 @@ public class TestCreatorEditor : Editor
         
         if (GUILayout.Button("Generate Test"))
         {
-            testCreator.createBuildings();
+            testCreator.CreateBuildings();
         }
     }
 }

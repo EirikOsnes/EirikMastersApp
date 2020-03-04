@@ -58,7 +58,7 @@ public class TestRunner : MonoBehaviour
                     EndTest();
                     if (tests.Count > 0)
                     {
-                        StartCoroutine(WaitThenActivate(0.5f, tests[UnityEngine.Random.Range(0, tests.Count)], ShowRealVal, null));
+                        StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
                     }
                     else
                     {
@@ -163,6 +163,11 @@ public class TestRunner : MonoBehaviour
     {
         test.StartTest();
         state = RunState.TestRunning;
+    }
+
+    Test GetNextTest()
+    {
+        return tests[UnityEngine.Random.Range(0, tests.Count)];
     }
 
     void ResetPosition()

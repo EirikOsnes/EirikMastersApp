@@ -27,6 +27,7 @@ public class Test : MonoBehaviour
     public float degrees;
     public float TimeAfterObserved;
     public float distance;
+    public int Quadrant;
 
     //Creation Methods
 
