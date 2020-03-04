@@ -27,6 +27,9 @@ public class TestRunner : MonoBehaviour
     private RunState state = RunState.NotBegun;
     private OVRCameraRig cameraRig;
     private GameObject playerController;
+    private GameObject A_Button_Tooltip;
+    private GameObject X_Button_Tooltip;
+    private GameObject R2_Button_Tooltip;
 
     // Start is called before the first frame update
     void Start()
@@ -42,6 +45,10 @@ public class TestRunner : MonoBehaviour
         logger = GetComponent<Logger>();
         cameraRig = FindObjectOfType<OVRCameraRig>();
         playerController = GameObject.Find("OVRPlayerController");
+        A_Button_Tooltip = GameObject.Find("A_Button_Tooltip");
+        X_Button_Tooltip = GameObject.Find("X_Button_Tooltip");
+        R2_Button_Tooltip = GameObject.Find("R2_Button_Tooltip");
+        DisableTooltips(X: false);
     }
 
     // Update is called once per frame
@@ -52,6 +59,12 @@ public class TestRunner : MonoBehaviour
 
             if (state == RunState.TestRunning)
             {
+                if (selectionHandler.IsPointing()) A_Button_Tooltip.SetActive(true);
+                else A_Button_Tooltip.SetActive(false);
+
+                if (selectionHandler.HasSelected()) X_Button_Tooltip.SetActive(true);
+                else X_Button_Tooltip.SetActive(false);
+
                 //Lock in the answer and transition to the next test.
                 if (OVRInput.GetUp(lockinButton))
                 {
@@ -69,6 +82,7 @@ public class TestRunner : MonoBehaviour
 
             if (state == RunState.RealValue)
             {
+
                 if (OVRInput.GetUp(lockinButton))
                 {
                     StartCoroutine(WaitThenActivate(0.5f, currentTest, PrepareTest, StartTest));
@@ -124,6 +138,13 @@ public class TestRunner : MonoBehaviour
         //logger.Log("Number of tests: " + tests.Count);
     }
 
+    private void DisableTooltips(bool A = true, bool R2 = true, bool X = true)
+    {
+        A_Button_Tooltip.SetActive(!A);
+        R2_Button_Tooltip.SetActive(!R2);
+        X_Button_Tooltip.SetActive(!X);
+    }
+
     void EndTest()
     {
         currentTest.EndTimer();
@@ -137,6 +158,7 @@ public class TestRunner : MonoBehaviour
         state = RunState.Finished;
         currentTest.gameObject.SetActive(false);
         selectionHandler.DestroySelector();
+        DisableTooltips();
     }
 
     void ShowRealVal(Test test)
@@ -150,6 +172,7 @@ public class TestRunner : MonoBehaviour
         realVal = Instantiate(test.GetCorrect(), new Vector3(0, 0, test.distance), Quaternion.identity);
         state = RunState.RealValue;
         ResetPosition();
+        DisableTooltips(X: false);
     }
 
     void PrepareTest(Test test)
@@ -163,6 +186,7 @@ public class TestRunner : MonoBehaviour
     {
         test.StartTest();
         state = RunState.TestRunning;
+        DisableTooltips(R2: false);
     }
 
     Test GetNextTest()

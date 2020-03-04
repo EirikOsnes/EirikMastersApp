@@ -27,10 +27,12 @@ public class Logger : MonoBehaviour
 
     public void WriteToFile(string filePath, string text)
     {
-        FileStream fs = File.Create(Application.persistentDataPath + filePath);
-        byte[] bytes = Encoding.UTF8.GetBytes(text);
-        fs.Write(bytes, 0, bytes.Length);
-        Log("WriteToFile ran successfully");
+        using (FileStream fs = File.Create(Application.persistentDataPath + filePath))
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            fs.Write(bytes, 0, bytes.Length);
+            Log("WriteToFile ran successfully");
+        }
     }
 
     public void WriteTestToFile(TestPass tests)

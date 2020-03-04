@@ -48,7 +48,6 @@ public class SelectionHandler : MonoBehaviour
             foreach (Button btn in btns)
             {
                 btn.onClick.AddListener(delegate { OnBuildingClick(go); });
-                Debug.Log("Added Button call");
             }
         }
     }
@@ -56,6 +55,16 @@ public class SelectionHandler : MonoBehaviour
     public void DestroySelector()
     {
         if (selector != null) Destroy(selector);
+    }
+
+    public bool IsPointing()
+    {
+        return pointer.laserBeamBehavior == LaserPointer.LaserBeamBehavior.On;
+    }
+
+    public bool HasSelected()
+    {
+        return selector != null;
     }
 
     List<Building> GetAllBuildings()
