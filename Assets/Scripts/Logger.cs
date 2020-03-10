@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
+using ServiceStack.Text;
 
 public class Logger : MonoBehaviour
 {
@@ -39,9 +40,9 @@ public class Logger : MonoBehaviour
     {
         try
         {
-            string jsonString = JsonUtility.ToJson(tests);
-            Log(jsonString);
-            WriteToFile("/test.json", jsonString);
+            string csvString = CsvSerializer.SerializeToString(tests);
+            Log(csvString);
+            WriteToFile("/test.csv", csvString);
         }
         catch (System.Exception e)
         {

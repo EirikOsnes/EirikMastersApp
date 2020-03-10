@@ -36,6 +36,7 @@ public class TestCreator : MonoBehaviour
     public bool randomizeQuadrant = false;
     public float minValue = 20f;
     public float maxValue = 60f;
+    public bool evenDistance = false;
 
     public void CreateBuildings()
     {
@@ -56,13 +57,13 @@ public class TestCreator : MonoBehaviour
         container.transform.parent = this.transform;
         if (randomizeQuadrant) quadrant = Random.Range(1, 5);
         float degrees = FOVToFloat(fieldOfView);
-        float degreesBetweenBuildings = degrees / numOfBuildings;
+        float degreesBetweenBuildings = (fieldOfView == FieldOfView.Narrow) ? degrees / (numOfBuildings - 1) : degrees / numOfBuildings;
         float currentRotation = CalculateStartRotation(degreesBetweenBuildings);
         int correctIndex = GenerateIndex();
         Debug.Log("Correct Index: " + correctIndex);
         GameObject correct;
 
-        float[] values = GenerateValues(correctIndex);
+        float[] values = (evenDistance) ? GenerateEvenValues(correctIndex) : GenerateValues(correctIndex);
         for (int i = 0; i < numOfBuildings; i++)
         {
             Vector3 spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
@@ -109,7 +110,6 @@ public class TestCreator : MonoBehaviour
 
     private float[] GenerateValues(int pos)
     {
-        //TODO: This might have to be made better, maybe normalised sampling? Also need forced spread among all quadrants.
         float[] retVals = new float[numOfBuildings];
 
         if(testType == TestType.Colour) { 
@@ -132,6 +132,20 @@ public class TestCreator : MonoBehaviour
         }
 
         return retVals;
+    }
+
+    private float[] GenerateEvenValues(int pos)
+    {
+        float stepSize = (maxValue - minValue) / (numOfBuildings - 1);
+
+        Stack<float> stack = new Stack<float>();
+        for (int i = 0; i < numOfBuildings; i++)
+        {
+            stack.Push(minValue + i * stepSize);
+        }
+        var newStack = stack.OrderBy(x => Random.value);
+
+        return newStack.ToArray();
     }
 
     private int GenerateIndex()
