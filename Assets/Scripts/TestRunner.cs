@@ -4,9 +4,14 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+/// <summary>
+/// Class responsible for running of tests.
+/// </summary>
 public class TestRunner : MonoBehaviour
 {
-
+    /// <summary>
+    /// Current state of run.
+    /// </summary>
     public enum RunState
     {
         NotBegun,
@@ -56,9 +61,10 @@ public class TestRunner : MonoBehaviour
     {
         try
         {
-
+            // Test currently running.
             if (state == RunState.TestRunning)
             {
+                //Activate/Deactivate applicable tooltips.
                 if (selectionHandler.IsPointing()) A_Button_Tooltip.SetActive(true);
                 else A_Button_Tooltip.SetActive(false);
 
@@ -80,15 +86,18 @@ public class TestRunner : MonoBehaviour
                 }
             }
 
+            // Real value currently shown.
             if (state == RunState.RealValue)
             {
-
+                //Change view to the running test.
                 if (OVRInput.GetUp(lockinButton))
                 {
                     StartCoroutine(WaitThenActivate(0.5f, currentTest, PrepareTest, StartTest));
                 }
             }
 
+            // Initial state still active, neither test nor real value yet shown.
+            // Any tutorial will be started from this stage.
             if (state == RunState.NotBegun)
             {
                 if (OVRInput.GetUp(lockinButton))
@@ -100,17 +109,20 @@ public class TestRunner : MonoBehaviour
                 }
             }
 
+            // Final state when all testpasses are completed. 
+            // Any surveys or thank yous will be started from this stage.
             if (state == RunState.Finished)
             {
 
             }
 
-            LogDebugInfo();
+            //LogDebugInfo();
 
 
         }
         catch (Exception e)
         {
+            //Log any exception thrown.
             logger.Log("Exception caught: " + e.GetType().Name);
             logger.Log(e.Message);
             logger.Log(e.StackTrace);
@@ -131,13 +143,19 @@ public class TestRunner : MonoBehaviour
         //logger.Log("Degrees Used: " + currentTest.GetDegreesUsed());
         //float currentRotation = currentTest.__GetCurrentRotation();
         //logger.Log("Current: " + currentRotation);
-        logger.Log("P-cont: " + playerController.transform.position.ToString());
-        logger.Log("cea: " + cameraRig.centerEyeAnchor.position.ToString());
-        logger.Log("cam: " + cameraRig.transform.position.ToString());
+        //logger.Log("P-cont: " + playerController.transform.position.ToString());
+        //logger.Log("cea: " + cameraRig.centerEyeAnchor.position.ToString());
+        //logger.Log("cam: " + cameraRig.transform.position.ToString());
         //logger.Log("Left: " + currentTest.leftAngle + " | Right: " + currentTest.rightAngle);
         //logger.Log("Number of tests: " + tests.Count);
     }
 
+    /// <summary>
+    /// Disables tooltips.
+    /// </summary>
+    /// <param name="A">True if "A"-button tooltip is to be disabled.</param>
+    /// <param name="R2">True if "R2"-button tooltip is to be disabled.</param>
+    /// <param name="X">True if "X"-button tooltip is to be disabled.</param>
     private void DisableTooltips(bool A = true, bool R2 = true, bool X = true)
     {
         A_Button_Tooltip.SetActive(!A);
@@ -145,6 +163,9 @@ public class TestRunner : MonoBehaviour
         X_Button_Tooltip.SetActive(!X);
     }
 
+    /// <summary>
+    /// End the current test.
+    /// </summary>
     void EndTest()
     {
         currentTest.EndTimer();
@@ -152,7 +173,11 @@ public class TestRunner : MonoBehaviour
         tests.Remove(currentTest);
     }
 
-    void EndTestPass(Test test)
+    /// <summary>
+    /// End the current TestPass, and write it to file.
+    /// </summary>
+    /// <param name="test">Leave as null</param>
+    void EndTestPass(Test test = null)
     {
         logger.WriteTestToFile(testPass);
         state = RunState.Finished;
@@ -161,6 +186,10 @@ public class TestRunner : MonoBehaviour
         DisableTooltips();
     }
 
+    /// <summary>
+    /// Display the correct value directly ahead.
+    /// </summary>
+    /// <param name="test">Test for which correct value is to be shown.</param>
     void ShowRealVal(Test test)
     {
         selectionHandler.DestroySelector();
@@ -175,6 +204,10 @@ public class TestRunner : MonoBehaviour
         DisableTooltips(X: false);
     }
 
+    /// <summary>
+    /// Clears the scene and activates the given test.
+    /// </summary>
+    /// <param name="test">Test to activate</param>
     void PrepareTest(Test test)
     {
         if (realVal != null) Destroy(realVal);
@@ -182,6 +215,10 @@ public class TestRunner : MonoBehaviour
         ResetPosition();
     }
 
+    /// <summary>
+    /// Starts the test.
+    /// </summary>
+    /// <param name="test">Test to start.</param>
     void StartTest(Test test)
     {
         test.StartTest();
@@ -189,11 +226,19 @@ public class TestRunner : MonoBehaviour
         DisableTooltips(R2: false);
     }
 
+    /// <summary>
+    /// Determine next test to run.
+    /// </summary>
+    /// <returns>The next test.</returns>
     Test GetNextTest()
     {
+        //TODO: This method can and should be improved upon to fit statistical methods.
         return tests[UnityEngine.Random.Range(0, tests.Count)];
     }
 
+    /// <summary>
+    /// Resets the positon of the user to face forward and be located in the center of the test area.
+    /// </summary>
     void ResetPosition()
     {
         Transform cea = cameraRig.centerEyeAnchor;
@@ -210,6 +255,10 @@ public class TestRunner : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Get all the tests in the scene.
+    /// </summary>
+    /// <returns>All Tests in the Scene as a List.</returns>
     List<Test> GetAllTests()
     {
         List<Test> objectsInScene = new List<Test>();
@@ -223,6 +272,15 @@ public class TestRunner : MonoBehaviour
         return objectsInScene;
     }
 
+    /// <summary>
+    /// Fading transition between views.
+    /// </summary>
+    /// <param name="waitTime">Time spent with screen fully black, in seconds</param>
+    /// <param name="test">Test methods are to be ran on.</param>
+    /// <param name="method">Method ran after fadeout, but before fadein.</param>
+    /// <param name="secondMethod">Method ran after fadein.</param>
+    /// <param name="fadeout">True if view should fade out, false if cutting straight to black.</param>
+    /// <returns></returns>
     IEnumerator WaitThenActivate(float waitTime, Test test, myMethod method = null, myMethod secondMethod = null, bool fadeout = true)
     {
         if(fadeout) screenFade.FadeOut();

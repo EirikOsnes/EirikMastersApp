@@ -3,15 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+/// <summary>
+/// Class to create a Test
+/// </summary>
 public class TestCreator : MonoBehaviour
 {
 
+    /// <summary>
+    /// Available Fields of view.
+    /// </summary>
     public enum FieldOfView
     {
         Narrow,
         Full
     }
 
+    /// <summary>
+    /// Available Test Types
+    /// </summary>
     public enum TestType
     {
         Height,
@@ -38,11 +47,18 @@ public class TestCreator : MonoBehaviour
     public float maxValue = 60f;
     public bool evenDistance = false;
 
+    /// <summary>
+    /// Public callback class for use in editor.
+    /// </summary>
     public void CreateBuildings()
     {
         CreateTest();
     }
 
+    /// <summary>
+    /// Sets up canvas in front of Buildings to interact with the pointer.
+    /// </summary>
+    /// <param name="go">Building to set up interaction.</param>
     private void SetRaycasterValues(GameObject go)
     {
         Canvas canvas = go.GetComponentInChildren<Canvas>();
@@ -51,31 +67,51 @@ public class TestCreator : MonoBehaviour
         if (raycaster) raycaster.pointer = laserPointer;
     }
 
+    /// <summary>
+    /// Creates a Test based on the variables currently in the TestCreator.
+    /// </summary>
     private void CreateTest()
     {
+        //Container for all buildings.
         GameObject container = new GameObject();
         container.transform.parent = this.transform;
+
+        //Determine quadrant of correct answer if random.
         if (randomizeQuadrant) quadrant = Random.Range(1, 5);
+
+        //Determine degrees between buildings, and rotation for first.
         float degrees = FOVToFloat(fieldOfView);
         float degreesBetweenBuildings = (fieldOfView == FieldOfView.Narrow) ? degrees / (numOfBuildings - 1) : degrees / numOfBuildings;
         float currentRotation = CalculateStartRotation(degreesBetweenBuildings);
+
+        //Create index for correct answer.
         int correctIndex = GenerateIndex();
-        Debug.Log("Correct Index: " + correctIndex);
         GameObject correct;
 
+        //Generate determining values for all buildings.
         float[] values = (evenDistance) ? GenerateEvenValues(correctIndex) : GenerateValues(correctIndex);
+
+        //Create all buildings.
         for (int i = 0; i < numOfBuildings; i++)
         {
+            //Direction of building.
             Vector3 spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
+            //Instantiate building at given rotation and distance.
             GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
             go.AddComponent<Building>();
+            //Scale building size.
             go.transform.localScale = new Vector3(1, (testType == TestType.Height) ? values[i] : heightOfBuildings, 1);
+            //Increment rotation
             currentRotation += degreesBetweenBuildings;
 
+            //Set colour of building, stripping any texture from the prefab.
             if (testType == TestType.Colour || stripColours)
             {
+                //Finds Renderer component of building, containing all visualisation parameters.
                 Renderer renderer = go.GetComponentInChildren<Renderer>();
                 Material[] mats = new Material[renderer.sharedMaterials.Length];
+
+                //Replaces all materials of the prefab with a solid greyscale colour.
                 for (int j = 0; j < renderer.sharedMaterials.Length; j++)
                 {
                     Material myMaterial = new Material(Shader.Find("Standard"));
@@ -91,10 +127,13 @@ public class TestCreator : MonoBehaviour
                 renderer.materials = mats;
             }
 
+            //Apply values so pointer can interact.
             SetRaycasterValues(go);
+            //Set building as correct, if index is correct.
             if (i == correctIndex) correct = go;
         }
 
+        //Create Test class containing the created buildings.
         Test testComponent = container.AddComponent<Test>();
         testComponent.TestType = testType;
         testComponent.SetFOV(fieldOfView, narrowFOV);
@@ -108,6 +147,11 @@ public class TestCreator : MonoBehaviour
         testComponent.Quadrant = quadrant;
     }
 
+    /// <summary>
+    /// Generates determining values for all buildings, randomly sampled between given min and max values.
+    /// </summary>
+    /// <param name="pos">Position of correct answer.</param>
+    /// <returns>Array of values for all buildings.</returns>
     private float[] GenerateValues(int pos)
     {
         float[] retVals = new float[numOfBuildings];
@@ -134,6 +178,12 @@ public class TestCreator : MonoBehaviour
         return retVals;
     }
 
+    /// <summary>
+    /// Generates determining values for all buildings, evenly spaced between given min and max values.
+    /// Order is randomised, 
+    /// </summary>
+    /// <param name="pos">Position of correct answer.</param>
+    /// <returns>Array of values for all buildings.</returns>
     private float[] GenerateEvenValues(int pos)
     {
         float stepSize = (maxValue - minValue) / (numOfBuildings - 1);
@@ -148,6 +198,10 @@ public class TestCreator : MonoBehaviour
         return newStack.ToArray();
     }
 
+    /// <summary>
+    /// Randomly generates index for a correct answer.
+    /// </summary>
+    /// <returns>Index of correct answer.</returns>
     private int GenerateIndex()
     {
         //No natural quadrants allowed
@@ -178,10 +232,16 @@ public class TestCreator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Calculate rotation for the first building.
+    /// </summary>
+    /// <param name="degsBetweenBuildings">Degrees between buildings.</param>
+    /// <returns>Rotation of the first building in degrees.</returns>
     private float CalculateStartRotation(float degsBetweenBuildings)
     {
-
+        //If field of view is Narrow, return leftmost angle in fov.
         if (fieldOfView == FieldOfView.Narrow || numOfBuildings % 4 != 0) return -narrowFOV / 2f;
+
         int buildingsPerQuad = (int)System.Math.Ceiling(numOfBuildings / 4f);
 
         //No overlap between quadrants
@@ -195,6 +255,11 @@ public class TestCreator : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Translate FieldOfView to degrees.
+    /// </summary>
+    /// <param name="fov">Field of View</param>
+    /// <returns>Angle in degrees</returns>
     public float FOVToFloat(FieldOfView fov)
     {
         return (fov == FieldOfView.Narrow) ? narrowFOV : 360f;

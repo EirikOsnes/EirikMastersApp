@@ -3,6 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class holding live data of a Test.
+/// </summary>
 public class Test : MonoBehaviour
 {
     public string ID;
@@ -29,19 +32,31 @@ public class Test : MonoBehaviour
     public float distance;
     public int Quadrant;
 
-    //Creation Methods
+    //----------Creation Methods----------
 
+    /// <summary>
+    /// Set the correct answer.
+    /// </summary>
+    /// <param name="correct">The correct answer.</param>
     public void SetCorrect(GameObject correct)
     {
         this.correct = correct;
     }
 
+    /// <summary>
+    /// Generate a unique ID for the test.
+    /// </summary>
     public void generateID()
     {
         ID = TestType.ToString();
         ID += "-" + Guid.NewGuid().ToString().Remove(8);
     }
 
+    /// <summary>
+    /// Set the Field of View mode for the test.
+    /// </summary>
+    /// <param name="fov">Field of view mode.</param>
+    /// <param name="degrees">Degrees in narrow field of view.</param>
     public void SetFOV(TestCreator.FieldOfView fov, float degrees)
     {
         FieldOfView = fov;
@@ -49,39 +64,114 @@ public class Test : MonoBehaviour
     }
 
 
-    //Get Methods
+    //----------Get Methods----------
+
+    /// <summary>
+    /// Return the total degrees observed during the test.
+    /// </summary>
+    /// <returns>Observed field in degrees.</returns>
     public float GetDegreesUsed()
     {
         return 360 - (leftAngle-rightAngle);
     }
 
+    /// <summary>
+    /// Check to see if the correct building is chosen.
+    /// </summary>
+    /// <returns>True if correct is chosen, false otherwise.</returns>
     public bool IsCorrectChosen()
     {
         return correct == selected;
     }
 
+    /// <summary>
+    /// Get the rotation of the correct answer.
+    /// </summary>
+    /// <returns>Rotation fo the correct answer in degrees.</returns>
     public float GetCorrectRotation()
     {
         return (correct.transform.rotation.eulerAngles.y);
     }
 
+    /// <summary>
+    /// Get the rotation of the selected answer.
+    /// </summary>
+    /// <returns>Rotation of the selected answer, -1 if none is selected.</returns>
     public float GetSelectedRotation()
     {
         if (selected == null) return -1;
         return (selected.transform.rotation.eulerAngles.y);
     }
 
+    /// <summary>
+    /// Get the determining value of the correct answer.
+    /// </summary>
+    /// <returns>Returns the determining value of the correct answer.</returns>
     public float GetCorrectValue()
     {
         return getValueFromBuilding(correct);
     }
 
+    /// <summary>
+    /// Get the determining value of the selected answer.
+    /// </summary>
+    /// <returns>Returns the determining value of the selected answer, -1 if none is selected.</returns>
     public float GetSelectedValue()
     {
         if (selected == null) return -1;
         return getValueFromBuilding(selected);
     }
 
+    /// <summary>
+    /// Gets the current time used.
+    /// </summary>
+    /// <returns>Time currently used.</returns>
+    public float GetCurrentTime()
+    {
+        return Time.time - startTime;
+    }
+
+    /// <summary>
+    /// Gets the current time used since the correct answer was observed.
+    /// </summary>
+    /// <returns>Time currently used since correct was observed, -1 if not yet observed.</returns>
+    public float GetCurrentTimeSinceObserved()
+    {
+        return (observedTime == -1) ? -1 : Time.time - observedTime;
+    }
+
+    /// <summary>
+    /// Gets the head's current rotation.
+    /// </summary>
+    /// <returns>Head's current rotation in degrees.</returns>
+    public float __GetCurrentRotation()
+    {
+        return forwardDirection.transform.rotation.eulerAngles.y;
+    }
+
+    /// <summary>
+    /// Gets the degrees used for this test.
+    /// </summary>
+    /// <returns>Degrees used for this test.</returns>
+    public float __GetDegrees()
+    {
+        return degrees;
+    }
+
+    /// <summary>
+    /// Gets the correct answer.
+    /// </summary>
+    /// <returns>GameObject of correct answer.</returns>
+    public GameObject GetCorrect()
+    {
+        return correct;
+    }
+
+    /// <summary>
+    /// Get the determining value of the given building. Throws errors if value can not be calculated.
+    /// </summary>
+    /// <param name="go">The building GameObject to find value for.</param>
+    /// <returns>The determining value of the given Building.</returns>
     private float getValueFromBuilding(GameObject go)
     {
         if (go == null) throw new NullReferenceException("Gameobject is null");
@@ -100,7 +190,11 @@ public class Test : MonoBehaviour
         }
     }
 
-    //Run Methods
+    //----------Run Methods----------
+
+    /// <summary>
+    /// Runs every frame.
+    /// </summary>
     void Update()
     {
         if (testStarted)
@@ -116,7 +210,7 @@ public class Test : MonoBehaviour
                 {
                     rightAngle = currentRotation;
                 }
-            } else
+            } else //Head moved towards the left
             {
                 if (currentRotation < leftAngle && currentRotation > rightAngle)
                 {
@@ -131,7 +225,6 @@ public class Test : MonoBehaviour
             }
 
             //Check to see if correct building is within vision.
-            //Possible that the angles are inverted between headset and buildings, so must use negative.
             if(observedTime < 0)
             {
                 float delta = angleDiff(currentRotation, GetCorrectRotation());
@@ -143,6 +236,9 @@ public class Test : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Starts the Test.
+    /// </summary>
     public void StartTest()
     {
         forwardDirection = GameObject.Find("ForwardDirection");
@@ -150,49 +246,41 @@ public class Test : MonoBehaviour
         testStarted = true;
     }
 
+    /// <summary>
+    /// Select a Building.
+    /// </summary>
+    /// <param name="go">The Building selected.</param>
     public void SetSelected(GameObject go)
     {
         selected = go;
     }
 
+    /// <summary>
+    /// Starts the timer for the test.
+    /// </summary>
     public void StartTimer()
     {
         startTime = Time.time;
     }
 
+    /// <summary>
+    /// Ends the timer for the test.
+    /// </summary>
     public void EndTimer()
     {
         TimeUsed = Time.time - startTime;
         TimeAfterObserved = Time.time - observedTime;
     }
 
-    public float GetCurrentTime()
-    {
-        return Time.time - startTime;
-    }
 
-    public float GetCurrentTimeSinceObserved()
-    {
-        return (observedTime == -1) ? -1 : Time.time - observedTime;
-    }
-
-    public float __GetCurrentRotation()
-    {
-        return forwardDirection.transform.rotation.eulerAngles.y;
-    }
-
-    public float __GetDegrees()
-    {
-        return degrees;
-    }
-
+    /// <summary>
+    /// Calculates the difference between two angles.
+    /// </summary>
+    /// <param name="a1">Angle 1.</param>
+    /// <param name="a2">Angle 2.</param>
+    /// <returns>Difference between a1 and a2.</returns>
     private float angleDiff(float a1, float a2)
     {
         return (a1 - a2 + 180 + 360) % 360 - 180;
-    }
-
-    public GameObject GetCorrect()
-    {
-        return correct;
     }
 }
