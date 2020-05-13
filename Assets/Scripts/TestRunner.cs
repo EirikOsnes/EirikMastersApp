@@ -28,8 +28,7 @@ public class TestRunner : MonoBehaviour
     public OVRInput.RawButton lockinButton;
     OVRScreenFade screenFade;
     delegate void myMethod(Test t);
-    [HideInInspector]
-    public TestPass testPass;
+    private TestPass testPass;
     private SelectionHandler selectionHandler;
     private GameObject realVal;
     private RunState state = RunState.NotBegun;
@@ -400,10 +399,19 @@ public class TestRunner : MonoBehaviour
         {
             List<TestSet> sets = new List<TestSet>();
             List<Test> tests = GetAllTestsInScene();
+            Dictionary<int, TestSet> dict = new Dictionary<int, TestSet>();
             foreach (Test test in tests)
             {
-                test.gameObject.SetActive(false);
-                TestSet mySet = new TestSet();
+                TestSet mySet;
+                if (dict.ContainsKey(test.testSet))
+                {
+                    mySet = dict[test.testSet];
+                }
+                else
+                {
+                    mySet = new TestSet();
+                    dict.Add(test.testSet, mySet);
+                }
                 if(test.FieldOfView == TestCreator.FieldOfView.Full)
                 {
                     mySet.fullTests.Add(test.gameObject);
@@ -412,6 +420,12 @@ public class TestRunner : MonoBehaviour
                     mySet.narrowTests.Add(test.gameObject);
                 }
             }
+
+            foreach (KeyValuePair<int,TestSet> pair in dict)
+            {
+                sets.Add(pair.Value);
+            }
+
             return sets;
         }
     }
@@ -419,7 +433,7 @@ public class TestRunner : MonoBehaviour
     List<TestSet> GetAllTestSetsFromRuntimeCreator()
     {
         RunTimeTestCreator creator = GameObject.FindObjectOfType<RunTimeTestCreator>();
-
+        creator.CreateTests();
         return creator.TestSets;
     }
 

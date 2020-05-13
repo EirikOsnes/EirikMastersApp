@@ -13,7 +13,7 @@ public class RunTimeTestCreator: MonoBehaviour
     //TODO: Get access to testsets in runner
 
     // Use this for initialization
-    void Awake()
+    public void CreateTests()
     {
         if (!testCreator) testCreator = FindObjectOfType<TestCreator>();
         CreateAllTests();

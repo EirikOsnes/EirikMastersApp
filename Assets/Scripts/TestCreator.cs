@@ -45,6 +45,7 @@ public class TestCreator : MonoBehaviour
     public float minValue = 20f;
     public float maxValue = 60f;
     public bool evenDistance = false;
+    public int testSet = 0;
 
     /// <summary>
     /// Public callback class for use in editor.
@@ -152,13 +153,14 @@ public class TestCreator : MonoBehaviour
         Test testComponent = container.AddComponent<Test>();
         testComponent.TestType = testType;
         testComponent.SetFOV(fieldOfView, narrowFOV);
-        testComponent.generateID();
-        container.name = testComponent.ID;
         testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
         testComponent.MinValue = values.Min();
         testComponent.MaxValue = values.Max();
         testComponent.distance = distance;
         testComponent.Quadrant = quadrant;
+        testComponent.testSet = testSet;
+        testComponent.generateID();
+        container.name = testComponent.ID;
 
         return container;
     }

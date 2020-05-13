@@ -30,6 +30,7 @@ public class Test : MonoBehaviour
     public float TimeAfterObserved;
     public float distance;
     public int Quadrant;
+    public int testSet;
 
     //----------Creation Methods----------
 
@@ -48,7 +49,7 @@ public class Test : MonoBehaviour
     public void generateID()
     {
         ID = TestType.ToString();
-        ID += "-" + Guid.NewGuid().ToString().Remove(8);
+        ID += " - Min:" + MinValue + " - Max:" + MaxValue;
     }
 
     /// <summary>
