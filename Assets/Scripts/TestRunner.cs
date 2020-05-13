@@ -43,6 +43,8 @@ public class TestRunner : MonoBehaviour
     public bool randomiseSetOrder = false;
     public bool separateNarrowAndFull = true;
     public bool separateTestSets = true;
+    public bool splitByTestType = true;
+    public bool reverseTestTypeOrder = false;
 
     // Start is called before the first frame update
     void Start()
@@ -246,12 +248,54 @@ public class TestRunner : MonoBehaviour
         //TODO: Separate by TestType?
 
         List<TestSet> sets = GetTestSets();
-        tests = new List<Test>();
+        List<Test> tests = new List<Test>();
+
+        if (splitByTestType)
+        {
+            List<TestSet>[] testTypeSets = new List<TestSet>[Enum.GetNames(typeof(TestCreator.TestType)).Length];
+            for (int i = 0; i < testTypeSets.Length; i++)
+            {
+                testTypeSets[i] = new List<TestSet>();
+            }
+            foreach (TestSet testSet in sets)
+            {
+                testTypeSets[(int)testSet.testType].Add(testSet);
+            }
+
+            if (!reverseTestTypeOrder)
+            {
+                for (int i = 0; i < testTypeSets.Length; i++)
+                {
+                    tests.AddRange(GetTestOrder(testTypeSets[i]));
+                }
+            }
+            else
+            {
+                for (int i = testTypeSets.Length - 1; i >= 0; i--)
+                {
+                    tests.AddRange(GetTestOrder(testTypeSets[i]));
+
+                }
+            }
+        }
+
+        else
+        {
+            tests.AddRange(GetTestOrder(sets));
+        }
+
+        this.tests = tests;
+    }
+
+    private List<Test> GetTestOrder(List<TestSet> sets)
+    {
+        List<Test> tests = new List<Test>();
         //The order of the sets are random.
         if (randomiseSetOrder) sets.Shuffle();
 
         //Each test set should be completed before the next begins.
-        if (separateTestSets) { 
+        if (separateTestSets)
+        {
             for (int i = 0; i < sets.Count; i++)
             {
                 List<GameObject> setTests = new List<GameObject>();
@@ -266,7 +310,7 @@ public class TestRunner : MonoBehaviour
                 {
                     int narrow = sets[i].narrowTests.Count;
                     int full = sets[i].fullTests.Count;
-                    for (int j = 0; j < Math.Max(narrow,full); j++)
+                    for (int j = 0; j < Math.Max(narrow, full); j++)
                     {
                         //Narrow Tests go first
                         if (narrowFirst)
@@ -318,6 +362,8 @@ public class TestRunner : MonoBehaviour
         }
 
         DisableAllTests(tests);
+
+        return tests;
     }
 
     private void DisableAllTests(List<Test> tests)

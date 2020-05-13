@@ -30,6 +30,7 @@ public class RunTimeTestCreator: MonoBehaviour
             for (int i = 0; i < parameters.testValues.Count; i++)
             {
                 TestSet myTestSet = new TestSet();
+                myTestSet.testType = parameters.testType;
 
                 testCreator.minValue = parameters.testValues[i].minValue;
                 testCreator.maxValue = parameters.testValues[i].maxValue;
