@@ -363,7 +363,7 @@ public class TestRunner : MonoBehaviour
             tests.AddRange(TestListFromGameObjectList(allTests));
         }
 
-        DisableAllTests(tests);
+        DisableAllTests(GetAllTestsInScene());
 
         return tests;
     }

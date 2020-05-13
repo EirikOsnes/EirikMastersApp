@@ -11461,7 +11461,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6288eee7f3d2614c90583e1a32d2f59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  createTestAtRuntime: 0
+  createTestAtRuntime: 1
   lockinButton: 256
   narrowFirst: 1
   randomiseSetOrder: 0
@@ -14718,7 +14718,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1410036738
 Transform:
   m_ObjectHideFlags: 0
@@ -17608,7 +17608,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1600165723
 Transform:
   m_ObjectHideFlags: 0
@@ -20774,7 +20774,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1860931969
 Transform:
   m_ObjectHideFlags: 0
@@ -21285,7 +21285,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1902674284
 Transform:
   m_ObjectHideFlags: 0
@@ -21847,7 +21847,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1971981426
 Transform:
   m_ObjectHideFlags: 0
