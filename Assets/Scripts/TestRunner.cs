@@ -21,11 +21,14 @@ public class TestRunner : MonoBehaviour
     }
 
     List<Test> tests;
+    List<TestSet> testSets;
     Logger logger;
     Test currentTest;
+    public bool createTestAtRuntime = true;
     public OVRInput.RawButton lockinButton;
     OVRScreenFade screenFade;
     delegate void myMethod(Test t);
+    [HideInInspector]
     public TestPass testPass;
     private SelectionHandler selectionHandler;
     private GameObject realVal;
@@ -36,15 +39,16 @@ public class TestRunner : MonoBehaviour
     private GameObject X_Button_Tooltip;
     private GameObject R2_Button_Tooltip;
 
+    public bool narrowFirst = true;
+    public bool randomiseSetOrder = false;
+    public bool separateNarrowAndFull = true;
+    public bool separateTestSets = true;
+
     // Start is called before the first frame update
     void Start()
     {
         testPass = new TestPass();
-        tests = GetAllTests();
-        foreach (Test test in tests)
-        {
-            test.gameObject.SetActive(false);
-        }
+        SetUpTests();
         screenFade = FindObjectOfType<OVRScreenFade>();
         selectionHandler = gameObject.GetComponent<SelectionHandler>();
         logger = GetComponent<Logger>();
@@ -104,7 +108,7 @@ public class TestRunner : MonoBehaviour
                 {
                     if (tests.Count != 0)
                     {
-                        StartCoroutine(WaitThenActivate(0f, tests[0], ShowRealVal));
+                        StartCoroutine(WaitThenActivate(0f, GetNextTest(), ShowRealVal));
                     }
                 }
             }
@@ -233,7 +237,95 @@ public class TestRunner : MonoBehaviour
     Test GetNextTest()
     {
         //TODO: This method can and should be improved upon to fit statistical methods.
-        return tests[UnityEngine.Random.Range(0, tests.Count)];
+        return tests[0];
+    }
+
+    private void SetUpTests()
+    {
+
+        //TODO: Separate by TestType?
+
+        List<TestSet> sets = GetTestSets();
+        tests = new List<Test>();
+        //The order of the sets are random.
+        if (randomiseSetOrder) sets.Shuffle();
+
+        //Each test set should be completed before the next begins.
+        if (separateTestSets) { 
+            for (int i = 0; i < sets.Count; i++)
+            {
+                List<GameObject> setTests = new List<GameObject>();
+                //All Narrow tests should be completed before Full, or vice versa.
+                if (separateNarrowAndFull)
+                {
+                    setTests.AddRange((narrowFirst) ? sets[i].narrowTests : sets[i].fullTests);
+                    setTests.AddRange((narrowFirst) ? sets[i].fullTests : sets[i].narrowTests);
+                }
+                //Corresponding Narrow and Full tests are successive.
+                else
+                {
+                    int narrow = sets[i].narrowTests.Count;
+                    int full = sets[i].fullTests.Count;
+                    for (int j = 0; j < Math.Max(narrow,full); j++)
+                    {
+                        //Narrow Tests go first
+                        if (narrowFirst)
+                        {
+                            if (narrow > j) setTests.Add(sets[i].narrowTests[j]);
+                            if (full > j) setTests.Add(sets[i].fullTests[j]);
+                        }
+                        //Full Tests go first
+                        else
+                        {
+                            if (full > j) setTests.Add(sets[i].fullTests[j]);
+                            if (narrow > j) setTests.Add(sets[i].narrowTests[j]);
+                        }
+                    }
+                }
+                tests.AddRange(TestListFromGameObjectList(setTests));
+            }
+        }
+        //Separate tests from a test set might not be successive.
+        else
+        {
+            List<GameObject> allTests = new List<GameObject>();
+
+            if (separateNarrowAndFull)
+            {
+                List<GameObject> narrowTests = new List<GameObject>();
+                List<GameObject> fullTests = new List<GameObject>();
+                for (int i = 0; i < sets.Count; i++)
+                {
+                    narrowTests.AddRange(sets[i].narrowTests);
+                    fullTests.AddRange(sets[i].fullTests);
+                }
+                //FIXME: Should narrow and full be shuffled?
+                allTests.AddRange((narrowFirst) ? narrowTests : fullTests);
+                allTests.AddRange((narrowFirst) ? fullTests : narrowTests);
+            }
+            // Unsupported, returns all tests in random order.
+            else
+            {
+                for (int i = 0; i < sets.Count; i++)
+                {
+                    allTests.AddRange(sets[i].narrowTests);
+                    allTests.AddRange(sets[i].fullTests);
+                }
+                allTests.Shuffle();
+            }
+
+            tests.AddRange(TestListFromGameObjectList(allTests));
+        }
+
+        DisableAllTests(tests);
+    }
+
+    private void DisableAllTests(List<Test> tests)
+    {
+        foreach (Test test in tests)
+        {
+            test.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -255,11 +347,41 @@ public class TestRunner : MonoBehaviour
 
     }
 
+    List<TestSet> GetTestSets()
+    {
+        if (createTestAtRuntime) return GetAllTestSetsFromRuntimeCreator();
+        else
+        {
+            List<TestSet> sets = new List<TestSet>();
+            List<Test> tests = GetAllTestsInScene();
+            foreach (Test test in tests)
+            {
+                test.gameObject.SetActive(false);
+                TestSet mySet = new TestSet();
+                if(test.FieldOfView == TestCreator.FieldOfView.Full)
+                {
+                    mySet.fullTests.Add(test.gameObject);
+                } else
+                {
+                    mySet.narrowTests.Add(test.gameObject);
+                }
+            }
+            return sets;
+        }
+    }
+
+    List<TestSet> GetAllTestSetsFromRuntimeCreator()
+    {
+        RunTimeTestCreator creator = GameObject.FindObjectOfType<RunTimeTestCreator>();
+
+        return creator.TestSets;
+    }
+
     /// <summary>
     /// Get all the tests in the scene.
     /// </summary>
     /// <returns>All Tests in the Scene as a List.</returns>
-    List<Test> GetAllTests()
+    List<Test> GetAllTestsInScene()
     {
         List<Test> objectsInScene = new List<Test>();
 
@@ -291,4 +413,30 @@ public class TestRunner : MonoBehaviour
         if (secondMethod != null) secondMethod(test);
     }
 
+    public List<Test> TestListFromGameObjectList(List<GameObject> gameObjects)
+    {
+        List<Test> tests = new List<Test>();
+        foreach (GameObject gameObject in gameObjects)
+        {
+            tests.Add(gameObject.GetComponent<Test>());
+        }
+        return tests;
+    }
+
+}
+
+static class Helpers
+{
+    public static void Shuffle<T>(this IList<T> list)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = UnityEngine.Random.Range(0, n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
+    }
 }

@@ -25,7 +25,6 @@ public class TestData
     public float TimeAfterObserved;
     public float MinValue;
     public float MaxValue;
-    public float Spread;
     private Logger logger;
     
 
@@ -36,7 +35,9 @@ public class TestData
         pollData();
     }
 
-
+    /// <summary>
+    /// Finds info from the live Test class and saves it in variables.
+    /// </summary>
     private void pollData()
     {
         TestID = currentTest.ID;
@@ -53,7 +54,6 @@ public class TestData
         TimeAfterObserved = currentTest.TimeAfterObserved;
         MinValue = currentTest.MinValue;
         MaxValue = currentTest.MaxValue;
-        Spread = currentTest.Spread;
     }
 
 }

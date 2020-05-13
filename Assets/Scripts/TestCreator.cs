@@ -15,7 +15,8 @@ public class TestCreator : MonoBehaviour
     public enum FieldOfView
     {
         Narrow,
-        Full
+        Full,
+        Both
     }
 
     /// <summary>
@@ -31,8 +32,6 @@ public class TestCreator : MonoBehaviour
     public int numOfBuildings = 8;
     public float heightOfBuildings = 50f; //Default height, for colour tests
     public float greyScaleColour = 80f; //Default colour, for height tests
-    [Range (0,1)]
-    public float spread = 0.2f; //Scaling the distribution away from the right answer.
     public FieldOfView fieldOfView = FieldOfView.Full;
     public TestType testType = TestType.Height;
     public float distance = 30f; //Meters away from observation point.
@@ -50,9 +49,25 @@ public class TestCreator : MonoBehaviour
     /// <summary>
     /// Public callback class for use in editor.
     /// </summary>
-    public void CreateBuildings()
+    /// <returns>The Gameobjects containing all buildings and the corresponding tests. If "Both", Narrow goes first.</returns>
+    public List<GameObject> CreateBuildings()
     {
-        CreateTest();
+        if (!eventCamera) eventCamera = Camera.main;
+        if (!laserPointer) laserPointer = GameObject.FindWithTag("Laser Pointer");
+        List<GameObject> tests = new List<GameObject>();
+
+        if(fieldOfView == FieldOfView.Both)
+        {
+            fieldOfView = FieldOfView.Narrow;
+            tests.Add(CreateTest());
+            fieldOfView = FieldOfView.Full;
+            tests.Add(CreateTest());
+        } else
+        {
+            tests.Add(CreateTest());
+        }
+ 
+        return tests;
     }
 
     /// <summary>
@@ -70,7 +85,7 @@ public class TestCreator : MonoBehaviour
     /// <summary>
     /// Creates a Test based on the variables currently in the TestCreator.
     /// </summary>
-    private void CreateTest()
+    private GameObject CreateTest()
     {
         //Container for all buildings.
         GameObject container = new GameObject();
@@ -142,9 +157,10 @@ public class TestCreator : MonoBehaviour
         testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
         testComponent.MinValue = values.Min();
         testComponent.MaxValue = values.Max();
-        testComponent.Spread = spread;
         testComponent.distance = distance;
         testComponent.Quadrant = quadrant;
+
+        return container;
     }
 
     /// <summary>

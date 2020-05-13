@@ -15,7 +15,6 @@ public class Test : MonoBehaviour
     public GameObject correct;
     public float MinValue;
     public float MaxValue;
-    public float Spread;
     private float startTime;
     private float observedTime = -1f;
     public float TimeUsed;

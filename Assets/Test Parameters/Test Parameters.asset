@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 930c81b58b6871741a1ab019c449f9d6, type: 3}
+  m_Name: Test Parameters
+  m_EditorClassIdentifier: 
+  testType: 0
+  fov: 2
+  testValues:
+  - minValue: 0
+    maxValue: 40
+  - minValue: 20
+    maxValue: 80
+  narrowFOV: 90
+  numOfBuildings: 8
+  heightOfBuildings: 50
+  greyScaleColour: 80
+  distance: 60
+  buildingPrefab: {fileID: 7672595835410023821, guid: 5e2a5cb3070beaf4299d1d9208d740f2,
+    type: 3}
+  stripColours: 0
+  allQuadrants: 1
+  narrowOncePerQuadrant: 0
+  evenDistance: 1
+  quadrant: 1
+  randomizeQuadrant: 0
