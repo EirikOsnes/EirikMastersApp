@@ -50,6 +50,7 @@ public class Test : MonoBehaviour
     {
         ID = TestType.ToString();
         ID += " - Min:" + MinValue + " - Max:" + MaxValue;
+        ID += " - " + FieldOfView.ToString();
     }
 
     /// <summary>

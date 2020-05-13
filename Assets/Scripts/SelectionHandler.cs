@@ -26,7 +26,7 @@ public class SelectionHandler : MonoBehaviour
     private void Start()
     {
         logger = GetComponent<Logger>();
-        assignButtonParameters();
+        //assignButtonParameters();
     }
 
     /// <summary>

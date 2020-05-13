@@ -48,17 +48,19 @@ public class TestRunner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        logger = GetComponent<Logger>();
         testPass = new TestPass();
         SetUpTests();
         screenFade = FindObjectOfType<OVRScreenFade>();
         selectionHandler = gameObject.GetComponent<SelectionHandler>();
-        logger = GetComponent<Logger>();
+        selectionHandler.assignButtonParameters();
         cameraRig = FindObjectOfType<OVRCameraRig>();
         playerController = GameObject.Find("OVRPlayerController");
         A_Button_Tooltip = GameObject.Find("A_Button_Tooltip");
         X_Button_Tooltip = GameObject.Find("X_Button_Tooltip");
         R2_Button_Tooltip = GameObject.Find("R2_Button_Tooltip");
         DisableTooltips(X: false);
+
     }
 
     // Update is called once per frame
@@ -131,6 +133,7 @@ public class TestRunner : MonoBehaviour
             logger.Log("Exception caught: " + e.GetType().Name);
             logger.Log(e.Message);
             logger.Log(e.StackTrace);
+            throw e;
         }
 
     }
