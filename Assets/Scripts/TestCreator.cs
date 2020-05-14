@@ -25,7 +25,8 @@ public class TestCreator : MonoBehaviour
     public enum TestType
     {
         Height,
-        Colour
+        Colour,
+        Distance
     }
 
     public float narrowFOV = 90f;
@@ -34,7 +35,7 @@ public class TestCreator : MonoBehaviour
     public float greyScaleColour = 80f; //Default colour, for height tests
     public FieldOfView fieldOfView = FieldOfView.Full;
     public TestType testType = TestType.Height;
-    public float distance = 30f; //Meters away from observation point.
+    public float distance = 60f; //Meters away from observation point.
     public GameObject buildingPrefab;
     public Camera eventCamera;
     public GameObject laserPointer;
@@ -112,8 +113,9 @@ public class TestCreator : MonoBehaviour
         {
             //Direction of building.
             Vector3 spawnDirection = Quaternion.Euler(0, currentRotation, 0) * Vector3.forward;
+            float spawnDistance = (testType == TestType.Distance) ? values[i] : distance;
             //Instantiate building at given rotation and distance.
-            GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * distance, 0, spawnDirection.z * distance), Quaternion.Euler(0, currentRotation, 0), container.transform);
+            GameObject go = Instantiate(buildingPrefab, new Vector3(spawnDirection.x * spawnDistance, 0, spawnDirection.z * spawnDistance), Quaternion.Euler(0, currentRotation, 0), container.transform);
             go.AddComponent<Building>();
             //Scale building size.
             go.transform.localScale = new Vector3(1, (testType == TestType.Height) ? values[i] : heightOfBuildings, 1);

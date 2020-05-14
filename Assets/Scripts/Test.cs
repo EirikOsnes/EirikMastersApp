@@ -177,11 +177,11 @@ public class Test : MonoBehaviour
     {
         if (go == null) throw new NullReferenceException("Gameobject is null");
         if (go.transform == null) throw new NullReferenceException("Transform is null");
-        if(TestType == TestCreator.TestType.Height)
+        if (TestType == TestCreator.TestType.Height)
         {
             return go.transform.lossyScale.y;
         }
-        else
+        else if (TestType == TestCreator.TestType.Colour)
         {
             Renderer r = go.GetComponentInChildren<Renderer>();
             if (r == null) throw new NullReferenceException("Renderer is null");
@@ -189,6 +189,11 @@ public class Test : MonoBehaviour
             if (r.materials[0].color == null) throw new NullReferenceException("Color is null");
             return r.materials[0].color.r * 255;
         }
+        else if (TestType == TestCreator.TestType.Distance)
+        {
+            return Vector3.Distance(go.transform.position, Vector3.zero);
+        }
+        else return -1;
     }
 
     //----------Run Methods----------
