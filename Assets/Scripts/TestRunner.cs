@@ -45,6 +45,8 @@ public class TestRunner : MonoBehaviour
     public bool splitByTestType = true;
     public bool reverseTestTypeOrder = false;
 
+    private DateTime startTime;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -112,6 +114,7 @@ public class TestRunner : MonoBehaviour
                     if (tests.Count != 0)
                     {
                         StartCoroutine(WaitThenActivate(0f, GetNextTest(), ShowRealVal));
+                        startTime = DateTime.Now;
                     }
                 }
             }
@@ -177,7 +180,9 @@ public class TestRunner : MonoBehaviour
     void EndTest()
     {
         currentTest.EndTimer();
-        testPass.tests.Add(new TestData(currentTest));
+        TestData currentTestData = new TestData(currentTest);
+        testPass.tests.Add(currentTestData);
+        logger.WriteTestToFile(currentTestData, "Tests/" + startTime.ToShortTimeString(), currentTest.ID);
         tests.Remove(currentTest);
     }
 
@@ -187,7 +192,7 @@ public class TestRunner : MonoBehaviour
     /// <param name="test">Leave as null</param>
     void EndTestPass(Test test = null)
     {
-        logger.WriteTestToFile(testPass);
+        logger.WriteTestPassToFile(testPass, "Tests/" + startTime.ToShortTimeString(), "TestPass");
         state = RunState.Finished;
         currentTest.gameObject.SetActive(false);
         selectionHandler.DestroySelector();

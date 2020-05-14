@@ -9,5 +9,6 @@ using System.Collections.Generic;
 [Serializable]
 public class TestPass
 {
+    public String date = DateTime.Now.ToLongDateString();
     public List<TestData> tests = new List<TestData>();
 }

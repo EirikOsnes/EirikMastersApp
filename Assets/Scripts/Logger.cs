@@ -42,11 +42,16 @@ public class Logger : MonoBehaviour
     /// <summary>
     /// Writes the string to the designated filepath.
     /// </summary>
-    /// <param name="filePath">Filepath to save to</param>
+    /// <param name="filename">filename to save to</param>
     /// <param name="text">Text to be saved</param>
-    public void WriteToFile(string filePath, string text)
+    public void WriteToFile(string filename, string text, string filepath = "")
     {
-        using (FileStream fs = File.Create(Application.persistentDataPath + filePath))
+
+        var fullpath = Application.persistentDataPath + "/" + ((filepath!="") ?  (filepath + "/") : "");
+
+        if (!Directory.Exists(fullpath)) Directory.CreateDirectory(fullpath);
+
+        using (FileStream fs = File.Create(fullpath + filename))
         {
             byte[] bytes = Encoding.UTF8.GetBytes(text);
             fs.Write(bytes, 0, bytes.Length);
@@ -58,13 +63,31 @@ public class Logger : MonoBehaviour
     /// Writes all information from a TestPass to a file in JSON format.
     /// </summary>
     /// <param name="tests">The TestPass to be saved.</param>
-    public void WriteTestToFile(TestPass tests)
+    public void WriteTestPassToFile(TestPass tests, string path = "tests", string filename = "tests")
     {
         try
         {
             string jsonString = JsonUtility.ToJson(tests);
             Log(jsonString);
-            WriteToFile("/test.json", jsonString);
+            WriteToFile(filename + ".json", jsonString, path);
+        }
+        catch (System.Exception e)
+        {
+            Log(e.Message);
+        }
+    }
+
+    /// <summary>
+    /// Writes all information from a Test to a file in JSON format.
+    /// </summary>
+    /// <param name="tests">The Test to be saved.</param>
+    public void WriteTestToFile(TestData test, string path = "", string filename = "test")
+    {
+        try
+        {
+            string jsonString = JsonUtility.ToJson(test);
+            Log(jsonString);
+            WriteToFile(filename + ".json", jsonString, path);
         }
         catch (System.Exception e)
         {
