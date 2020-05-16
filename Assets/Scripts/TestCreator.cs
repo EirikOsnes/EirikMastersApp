@@ -161,6 +161,7 @@ public class TestCreator : MonoBehaviour
         testComponent.distance = distance;
         testComponent.Quadrant = quadrant;
         testComponent.testSet = testSet;
+        testComponent.numberOfBuildings = numOfBuildings;
         testComponent.generateID();
         container.name = testComponent.ID;
 
