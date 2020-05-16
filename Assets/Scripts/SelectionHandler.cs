@@ -38,7 +38,7 @@ public class SelectionHandler : MonoBehaviour
         //Click only if laserpointer is activated
         if (pointer.laserBeamBehavior == LaserPointer.LaserBeamBehavior.Off) return;
 
-        GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(-90, 0, 0));
+        GameObject newSelector = Instantiate(selectionMarker, go.transform.position + new Vector3(0, go.transform.lossyScale.y + 3, 0), Quaternion.Euler(180, 0, 0));
         DestroySelector();
         selector = newSelector;
         Test myTest = go.GetComponentInParent<Test>();

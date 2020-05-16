@@ -10906,7 +10906,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 1120100365}
-  selectionMarker: {fileID: 8307482783545589437, guid: 681418f88f82ecd42a35fdd8e600f7d5,
+  selectionMarker: {fileID: 5044430269466875570, guid: a6c2c028c3061404882e0bdee97fbe69,
     type: 3}
   pointer: {fileID: 165585584}
 --- !u!4 &1114040582
@@ -10954,14 +10954,14 @@ MonoBehaviour:
   infoScreen: {fileID: 1261555375}
   groupSelectScreen: {fileID: 780268115}
   narrowFirst: 1
-  randomiseSetOrder: 0
+  randomiseSetOrder: 1
   separateNarrowAndFull: 1
   separateTestSets: 1
   splitByTestType: 1
   reverseTestTypeOrder: 0
-  nextVariablesShown: 0
-  exposureTimeLimit: 5
-  searchTimeLimit: 5
+  nextVariablesShown: 1
+  exposureTimeLimit: 0
+  searchTimeLimit: 0
   tutorialParameters:
   - {fileID: 11400000, guid: 3b74291d6e1c6684c9413ee1bc559a83, type: 2}
   - {fileID: 11400000, guid: 9bd9767c759cd014eb88c18cff3f291f, type: 2}
