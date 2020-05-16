@@ -10948,7 +10948,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f6288eee7f3d2614c90583e1a32d2f59, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  createTestAtRuntime: 0
+  createTestAtRuntime: 1
   lockinButton: 256
   skippingAllowed: 1
   infoScreen: {fileID: 1261555375}
@@ -10960,6 +10960,8 @@ MonoBehaviour:
   splitByTestType: 1
   reverseTestTypeOrder: 0
   nextVariablesShown: 0
+  exposureTimeLimit: 5
+  searchTimeLimit: 5
   tutorialParameters:
   - {fileID: 11400000, guid: 3b74291d6e1c6684c9413ee1bc559a83, type: 2}
   - {fileID: 11400000, guid: 9bd9767c759cd014eb88c18cff3f291f, type: 2}

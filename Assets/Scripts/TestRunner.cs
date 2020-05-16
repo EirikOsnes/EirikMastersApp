@@ -58,8 +58,13 @@ public class TestRunner : MonoBehaviour
     public bool reverseTestTypeOrder = false;
     public bool nextVariablesShown = false;
 
+    public float exposureTimeLimit = 0;
+    public float searchTimeLimit = 0;
+    private float stateStartTime;
+
     public List<TestParameters> tutorialParameters;
     private bool tutorialActive = false;
+    private bool transitioning = false;
 
     private DateTime startTime;
 
@@ -77,7 +82,6 @@ public class TestRunner : MonoBehaviour
         DisableAllTests(GetAllTestsInScene());
         screenFade = FindObjectOfType<OVRScreenFade>();
         selectionHandler = gameObject.GetComponent<SelectionHandler>();
-        selectionHandler.assignButtonParameters();
         cameraRig = FindObjectOfType<OVRCameraRig>();
         playerController = GameObject.Find("OVRPlayerController");
         A_Button_Tooltip = GameObject.Find("A_Button_Tooltip");
@@ -92,9 +96,26 @@ public class TestRunner : MonoBehaviour
     {
         try
         {
+
+            if (transitioning) return;
+
             // Test currently running.
             if (state == RunState.TestRunning)
             {
+
+                if(!tutorialActive && searchTimeLimit > 0 && (Time.time - stateStartTime) > searchTimeLimit)
+                {
+                    EndTest();
+                    if (tests.Count > 0)
+                    {
+                        StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
+                    }
+                    else
+                    {
+                        StartCoroutine(WaitThenActivate(0.5f, null, EndTestPass));
+                    }
+                }
+
                 //Activate/Deactivate applicable tooltips.
                 if (selectionHandler.IsPointing()) A_Button_Tooltip.SetActive(true);
                 else A_Button_Tooltip.SetActive(false);
@@ -138,6 +159,12 @@ public class TestRunner : MonoBehaviour
             // Real value currently shown.
             if (state == RunState.RealValue)
             {
+
+                if(!tutorialActive && exposureTimeLimit > 0 && (Time.time - stateStartTime) > exposureTimeLimit)
+                {
+                    StartCoroutine(WaitThenActivate(0.5f, currentTest, PrepareTest, StartTest));
+                }
+
                 //Change view to the running test.
                 if (OVRInput.GetUp(lockinButton))
                 {
@@ -208,6 +235,7 @@ public class TestRunner : MonoBehaviour
         catch (Exception e)
         {
             //Log any exception thrown.
+            logger.gameObject.SetActive(true);
             logger.Log("Exception caught: " + e.GetType().Name);
             logger.Log(e.Message);
             logger.Log(e.StackTrace);
@@ -308,6 +336,7 @@ public class TestRunner : MonoBehaviour
         ResetPosition();
         DisableTooltips(X: false);
         UpdateInfoText(test);
+        stateStartTime = Time.time;
     }
 
     /// <summary>
@@ -331,6 +360,7 @@ public class TestRunner : MonoBehaviour
         state = RunState.TestRunning;
         DisableTooltips(R2: false);
         UpdateInfoText(test);
+        stateStartTime = Time.time;
     }
 
     void GroupIsSelected(Test test = null)
@@ -424,6 +454,8 @@ public class TestRunner : MonoBehaviour
         }
 
         this.tests = tests;
+        selectionHandler.assignButtonParameters();
+        DisableAllTests(GetAllTestsInScene());
     }
 
     private List<Test> GetTestOrder(List<TestSet> sets)
@@ -595,7 +627,7 @@ public class TestRunner : MonoBehaviour
             if (test != null)
             {
                 infoString += "\n\nThis test will vary the " + test.TestType.ToString() + " of the objects.\n\nThe different objects will be placed " +
-                    ((test.FieldOfView == TestCreator.FieldOfView.Full) ? "anywhere around you." : "within your field of view.");
+                    ((test.FieldOfView == TestCreator.FieldOfView.Full) ? "anywhere around you. Remember to look around!" : "within your field of view.");
             }
             if (!tutorialActive && !nextVariablesShown)
             {
@@ -661,7 +693,7 @@ public class TestRunner : MonoBehaviour
                 reverseTestTypeOrder = true;
                 goto default;
             default:
-                StartCoroutine(WaitThenActivate(0.5f, null, GroupIsSelected, null, fadeout: false));
+                StartCoroutine(WaitThenActivate(0.5f, null, GroupIsSelected, null));
                 break;
 
         }
@@ -695,12 +727,14 @@ public class TestRunner : MonoBehaviour
     /// <returns></returns>
     IEnumerator WaitThenActivate(float waitTime, Test test, myMethod method = null, myMethod secondMethod = null, bool fadeout = true)
     {
+        transitioning = true;
         if(fadeout) screenFade.FadeOut();
         yield return new WaitForSeconds(screenFade.fadeTime);
         if (method != null) method(test);
         yield return new WaitForSeconds(waitTime);
         screenFade.FadeIn();
         if (secondMethod != null) secondMethod(test);
+        transitioning = false;
     }
 
     public List<Test> TestListFromGameObjectList(List<GameObject> gameObjects)
