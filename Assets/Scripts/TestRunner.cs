@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Class responsible for running of tests.
@@ -14,7 +15,9 @@ public class TestRunner : MonoBehaviour
     /// </summary>
     public enum RunState
     {
+        SelectGroup,
         NotBegun,
+        TutorialFinished,
         RealValue,
         TestRunning,
         Finished
@@ -27,18 +30,25 @@ public class TestRunner : MonoBehaviour
     Test currentTest;
     public bool createTestAtRuntime = true;
     public OVRInput.RawButton lockinButton;
+    public bool skippingAllowed = true;
     OVRScreenFade screenFade;
     delegate void myMethod(Test t);
     private TestPass testPass;
     private SelectionHandler selectionHandler;
     private GameObject realVal;
-    private RunState state = RunState.NotBegun;
+    private RunState state = RunState.SelectGroup;
     private OVRCameraRig cameraRig;
     private GameObject playerController;
     private GameObject A_Button_Tooltip;
     private GameObject X_Button_Tooltip;
     private GameObject R2_Button_Tooltip;
     private RunTimeTestCreator creator;
+    public Canvas infoScreen;
+    public Canvas groupSelectScreen;
+
+    private bool tutorialEndIsHeld = false;
+    private float tutorialEndStart = -1;
+    private float timeToHold = 1;
 
     public bool narrowFirst = true;
     public bool randomiseSetOrder = false;
@@ -46,6 +56,7 @@ public class TestRunner : MonoBehaviour
     public bool separateTestSets = true;
     public bool splitByTestType = true;
     public bool reverseTestTypeOrder = false;
+    public bool nextVariablesShown = false;
 
     public List<TestParameters> tutorialParameters;
     private bool tutorialActive = false;
@@ -56,9 +67,10 @@ public class TestRunner : MonoBehaviour
     void Start()
     {
         logger = GetComponent<Logger>();
+        Time.timeScale = 1.0f;
         testPass = new TestPass();
         creator = GameObject.FindObjectOfType<RunTimeTestCreator>();
-        SetUpTests();
+        //SetUpTests();
         SetUpTutorialTests();
         logger.Log("tutorialActive: " + tutorialActive);
         logger.Log("tutorials count: " + tutorialTests.Count);
@@ -71,8 +83,8 @@ public class TestRunner : MonoBehaviour
         A_Button_Tooltip = GameObject.Find("A_Button_Tooltip");
         X_Button_Tooltip = GameObject.Find("X_Button_Tooltip");
         R2_Button_Tooltip = GameObject.Find("R2_Button_Tooltip");
-        DisableTooltips(X: false);
-
+        DisableTooltips(R2: false, A: false);
+        UpdateInfoText();
     }
 
     // Update is called once per frame
@@ -91,13 +103,22 @@ public class TestRunner : MonoBehaviour
                 else X_Button_Tooltip.SetActive(false);
 
                 //Lock in the answer and transition to the next test.
-                if (OVRInput.GetUp(lockinButton))
+                if (OVRInput.GetUp(lockinButton) && (skippingAllowed || selectionHandler.HasSelected()))
                 {
                     EndTest();
 
                     if (tutorialActive)
                     {
-                        StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
+
+                        if(tutorialTests.Count > 0)
+                        {
+                            StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
+                        }
+                        else
+                        {
+                            StartCoroutine(WaitThenActivate(0.5f, null, EndTutorial));
+                        }
+
                     }
 
                     else
@@ -122,6 +143,41 @@ public class TestRunner : MonoBehaviour
                 {
                     StartCoroutine(WaitThenActivate(0.5f, currentTest, PrepareTest, StartTest));
                 }
+            }
+
+            if (state == RunState.TutorialFinished)
+            {
+                //Start tutorial again
+                if (OVRInput.GetUp(lockinButton))
+                {
+                    if (tutorialEndStart < 0) tutorialEndStart = Time.time;
+                    float timeHeld = Time.time - tutorialEndStart;
+                    if (timeHeld > timeToHold)
+                    {
+                        //End tutorial
+                        tutorialActive = false;
+                        StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
+                    }
+                    else
+                    {
+                        tutorialEndIsHeld = false;
+                        StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
+                    }
+                }
+
+                if (OVRInput.Get(lockinButton))
+                {
+                    if(!tutorialEndIsHeld)
+                    {
+                        tutorialEndIsHeld = true;
+                        tutorialEndStart = Time.time;
+                    }
+                    logger.SetLog("Time Held: " + (Time.time - tutorialEndStart));
+                }
+                else
+                {
+                    tutorialEndIsHeld = false;
+                }                
             }
 
             // Initial state still active, neither test nor real value yet shown.
@@ -222,6 +278,17 @@ public class TestRunner : MonoBehaviour
         currentTest.gameObject.SetActive(false);
         selectionHandler.DestroySelector();
         DisableTooltips();
+        UpdateInfoText();
+    }
+
+    void EndTutorial(Test test = null)
+    {
+        logger.Log("Tutorial ended");
+        state = RunState.TutorialFinished;
+        currentTest.gameObject.SetActive(false);
+        selectionHandler.DestroySelector();
+        DisableTooltips(X: false);
+        UpdateInfoText();
     }
 
     /// <summary>
@@ -240,6 +307,7 @@ public class TestRunner : MonoBehaviour
         state = RunState.RealValue;
         ResetPosition();
         DisableTooltips(X: false);
+        UpdateInfoText(test);
     }
 
     /// <summary>
@@ -262,6 +330,21 @@ public class TestRunner : MonoBehaviour
         test.StartTest();
         state = RunState.TestRunning;
         DisableTooltips(R2: false);
+        UpdateInfoText(test);
+    }
+
+    void GroupIsSelected(Test test = null)
+    {
+        try {state = RunState.NotBegun;
+        DisableTooltips(X: false);
+        UpdateInfoText();
+        groupSelectScreen.gameObject.SetActive(false);
+        SetUpTests(); }
+        catch (Exception e)
+        {
+            logger.Log(e.ToString());
+        }
+        
     }
 
     /// <summary>
@@ -488,6 +571,100 @@ public class TestRunner : MonoBehaviour
     List<TestSet> GetAllTestSetsFromRuntimeCreator()
     {
         return creator.CreateTests();
+    }
+
+    private void UpdateInfoText(Test test = null)
+    {
+        string infoString = "";
+        infoScreen.gameObject.SetActive(true);
+        if(state == RunState.SelectGroup)
+        {
+            infoScreen.gameObject.SetActive(false);
+        }
+        if (state == RunState.NotBegun)
+        {
+            infoString += "Thanks for partaking in this experiment. We will begin with a tutorial. To begin this tutorial, please press the X-button highlighted on your left controller";
+        }
+        if(state == RunState.RealValue)
+        {
+            if (tutorialActive)
+            {
+                infoString += "Tests consist of 2 stages. In this stage you are shown an object. In the next stage you are to locate this object among others.";
+                infoString += "\nWhen you feel you are ready, press the X-button highlighted on you left controller to proceed to the second stage";
+            }
+            if (test != null)
+            {
+                infoString += "\n\nThis test will vary the " + test.TestType.ToString() + " of the objects.\n\nThe different objects will be placed " +
+                    ((test.FieldOfView == TestCreator.FieldOfView.Full) ? "anywhere around you." : "within your field of view.");
+            }
+            if (!tutorialActive && !nextVariablesShown)
+            {
+                infoScreen.gameObject.SetActive(false);
+            }
+        }
+        if(state == RunState.TestRunning)
+        {
+            if (tutorialActive)
+            {
+                infoString += "Here you are shown " + test.numberOfBuildings + " objects. Please select the one you think you saw in the previous view.";
+                infoString += "\n\nAll controls available to you are highlighted on your controllers:";
+                infoString += "\nTo select, activate the pointer on your right hand, point at the object of choice, and select it with the A-button.";
+                infoString += "\nWhen selected, a marker will appear above the building, and the X-button on your left controller will prompt you to accept your selection.";
+                infoString += "\nIf you change your mind, you can select a new object before pressing the X-button";
+            } else
+            {
+                infoScreen.gameObject.SetActive(false);
+            }
+        }
+        if(state == RunState.TutorialFinished)
+        {
+            infoString += "Well done, you have finished the tutorial. If you are unsure about any controls, please retake the tutorial. If you are ready, you can now proceed to the experiment.";
+            infoString += "\n\nTo redo the tutorial, click the X-button highlighted on your left controller.";
+            infoString += "\n\nTo continue to the experiment, press and HOLD the X-button highlighted on your left controller for 2 seconds.";
+        }
+        if(state == RunState.Finished)
+        {
+            infoString += "The experiment is finished.\n\nThank you for participating!";
+        }
+
+        
+        Text infoText = infoScreen.transform.Find("Infotext").GetComponent<Text>();
+        infoText.text = infoString;
+    }
+
+    /// <summary>
+    /// Selects the ordering of tests based on the input number. Used as a button callback.
+    /// 1: Narrow first, Height first.
+    /// 2: Narrow first, Colour first.
+    /// 3: Full first, Height first.
+    /// 4: Full first, Colour first.
+    /// </summary>
+    /// <param name="buttonNum"></param>
+    public void SelectOrderingByButton(int buttonNum)
+    {
+        switch (buttonNum)
+        {
+            case 1:
+                narrowFirst = true;
+                reverseTestTypeOrder = false;
+                goto default;
+            case 2:
+                narrowFirst = true;
+                reverseTestTypeOrder = true;
+                goto default;
+            case 3:
+                narrowFirst = false;
+                reverseTestTypeOrder = false;
+                goto default;
+            case 4:
+                narrowFirst = false;
+                reverseTestTypeOrder = true;
+                goto default;
+            default:
+                StartCoroutine(WaitThenActivate(0.5f, null, GroupIsSelected, null, fadeout: false));
+                break;
+
+        }
     }
 
     /// <summary>

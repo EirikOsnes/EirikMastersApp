@@ -31,6 +31,7 @@ public class Test : MonoBehaviour
     public float distance;
     public int Quadrant;
     public int testSet;
+    public int numberOfBuildings;
     bool tutorial = false;
 
     //----------Creation Methods----------
