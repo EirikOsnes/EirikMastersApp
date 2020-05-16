@@ -12,16 +12,18 @@ public class RunTimeTestCreator: MonoBehaviour
 
     //TODO: Get access to testsets in runner
 
-    // Use this for initialization
-    public void CreateTests()
+    public List<TestSet> CreateTests(List<TestParameters> testParameters = null)
     {
         if (!testCreator) testCreator = FindObjectOfType<TestCreator>();
-        CreateAllTests();
+        TestSets = new List<TestSet>();
+        CreateAllTests(testParameters);
+        return testSets;
     }
 
-    private void CreateAllTests()
+    private void CreateAllTests(List<TestParameters> testParameters = null)
     {
-        foreach (TestParameters parameters in testParameters)
+
+        foreach (TestParameters parameters in (testParameters != null) ? testParameters : this.testParameters)
         {
 
             SetTestCreatorValues(parameters);

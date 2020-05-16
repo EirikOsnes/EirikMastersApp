@@ -21,7 +21,8 @@ public class TestRunner : MonoBehaviour
     }
 
     List<Test> tests;
-    List<TestSet> testSets;
+    List<Test> tutorialTests;
+    List<Test> tutorialTestBackup;
     Logger logger;
     Test currentTest;
     public bool createTestAtRuntime = true;
@@ -37,6 +38,7 @@ public class TestRunner : MonoBehaviour
     private GameObject A_Button_Tooltip;
     private GameObject X_Button_Tooltip;
     private GameObject R2_Button_Tooltip;
+    private RunTimeTestCreator creator;
 
     public bool narrowFirst = true;
     public bool randomiseSetOrder = false;
@@ -45,6 +47,9 @@ public class TestRunner : MonoBehaviour
     public bool splitByTestType = true;
     public bool reverseTestTypeOrder = false;
 
+    public List<TestParameters> tutorialParameters;
+    private bool tutorialActive = false;
+
     private DateTime startTime;
 
     // Start is called before the first frame update
@@ -52,7 +57,12 @@ public class TestRunner : MonoBehaviour
     {
         logger = GetComponent<Logger>();
         testPass = new TestPass();
+        creator = GameObject.FindObjectOfType<RunTimeTestCreator>();
         SetUpTests();
+        SetUpTutorialTests();
+        logger.Log("tutorialActive: " + tutorialActive);
+        logger.Log("tutorials count: " + tutorialTests.Count);
+        DisableAllTests(GetAllTestsInScene());
         screenFade = FindObjectOfType<OVRScreenFade>();
         selectionHandler = gameObject.GetComponent<SelectionHandler>();
         selectionHandler.assignButtonParameters();
@@ -84,13 +94,22 @@ public class TestRunner : MonoBehaviour
                 if (OVRInput.GetUp(lockinButton))
                 {
                     EndTest();
-                    if (tests.Count > 0)
+
+                    if (tutorialActive)
                     {
                         StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
                     }
+
                     else
                     {
-                        StartCoroutine(WaitThenActivate(0.5f, null, EndTestPass));
+                        if (tests.Count > 0)
+                        {
+                            StartCoroutine(WaitThenActivate(0.5f, GetNextTest(), ShowRealVal, null));
+                        }
+                        else
+                        {
+                            StartCoroutine(WaitThenActivate(0.5f, null, EndTestPass));
+                        }
                     }
                 }
             }
@@ -180,10 +199,16 @@ public class TestRunner : MonoBehaviour
     void EndTest()
     {
         currentTest.EndTimer();
-        TestData currentTestData = new TestData(currentTest);
-        testPass.tests.Add(currentTestData);
-        logger.WriteTestToFile(currentTestData, "Tests/" + startTime.ToShortTimeString(), currentTest.ID);
-        tests.Remove(currentTest);
+        if (!tutorialActive)
+        {
+            TestData currentTestData = new TestData(currentTest);
+            testPass.tests.Add(currentTestData);
+            logger.WriteTestToFile(currentTestData, "Tests/" + startTime.ToShortTimeString(), currentTest.ID);
+            tests.Remove(currentTest);
+        } else
+        {
+            tutorialTests.Remove(currentTest);
+        }
     }
 
     /// <summary>
@@ -245,8 +270,32 @@ public class TestRunner : MonoBehaviour
     /// <returns>The next test.</returns>
     Test GetNextTest()
     {
+        if (tutorialActive && tutorialTestBackup.Count > 0)
+        {
+            if (tutorialTests.Count > 0) return tutorialTests[0];
+            else
+            {
+                tutorialTests = new List<Test>(tutorialTestBackup);
+                return tutorialTests[0];
+            }
+        }
         //TODO: This method can and should be improved upon to fit statistical methods.
         return tests[0];
+    }
+
+    private void SetUpTutorialTests()
+    {
+        if (tutorialParameters == null) return;
+        List<TestSet> sets = creator.CreateTests(tutorialParameters);
+        List<Test> tutorials = new List<Test>();
+        foreach (TestSet set in sets)
+        {
+            tutorials.AddRange(TestListFromGameObjectList(set.narrowTests));
+            tutorials.AddRange(TestListFromGameObjectList(set.fullTests));
+        }
+        tutorialTests = new List<Test>(tutorials);
+        tutorialTestBackup = new List<Test>(tutorials);
+        tutorialActive = true;
     }
 
     private void SetUpTests()
@@ -368,8 +417,6 @@ public class TestRunner : MonoBehaviour
             tests.AddRange(TestListFromGameObjectList(allTests));
         }
 
-        DisableAllTests(GetAllTestsInScene());
-
         return tests;
     }
 
@@ -440,9 +487,7 @@ public class TestRunner : MonoBehaviour
 
     List<TestSet> GetAllTestSetsFromRuntimeCreator()
     {
-        RunTimeTestCreator creator = GameObject.FindObjectOfType<RunTimeTestCreator>();
-        creator.CreateTests();
-        return creator.TestSets;
+        return creator.CreateTests();
     }
 
     /// <summary>

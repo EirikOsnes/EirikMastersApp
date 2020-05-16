@@ -29,6 +29,7 @@ public class Logger : MonoBehaviour
     public void Log(string str)
     {
         text.text += "\n" + str;
+        Debug.Log(str);
     }
 
     /// <summary>
