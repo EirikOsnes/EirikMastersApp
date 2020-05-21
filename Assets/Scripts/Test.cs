@@ -277,7 +277,7 @@ public class Test : MonoBehaviour
     public void EndTimer()
     {
         TimeUsed = Time.time - startTime;
-        TimeAfterObserved = Time.time - observedTime;
+        TimeAfterObserved = GetCurrentTimeSinceObserved();
     }
 
 
