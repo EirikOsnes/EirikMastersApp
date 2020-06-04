@@ -11006,8 +11006,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   testParameters:
-  - {fileID: 11400000, guid: 5117b3fbcc175a94cb54e1edeff4f4e7, type: 2}
-  - {fileID: 11400000, guid: ddd10363460f6fb4e9bb5409f606b3bd, type: 2}
+  - {fileID: 11400000, guid: 3b6ca338f77540e4ab910fdd581605c4, type: 2}
+  - {fileID: 11400000, guid: f60e2ac7f3ad32540b28c28fc1019b1c, type: 2}
   testCreator: {fileID: 1885583164}
 --- !u!1 &1115194928
 GameObject:
@@ -19802,7 +19802,7 @@ MonoBehaviour:
   eventCamera: {fileID: 35668991}
   laserPointer: {fileID: 165585583}
   stripColours: 1
-  quadrant: 1
+  quadrant: 2
   randomizeQuadrant: 1
   minValue: 30
   maxValue: 70

@@ -14,14 +14,14 @@ public class TestParameters : ScriptableObject
     public int numOfBuildings = 8;
     public float heightOfBuildings = 50f; //Default height, for colour tests
     public float greyScaleColour = 80f; //Default colour, for height tests
-    public float distance = 30f; //Meters away from observation point.
+    public float distance = 60f; //Meters away from observation point.
     public GameObject buildingPrefab;
     //public Camera eventCamera;
     //public GameObject laserPointer;
     public bool stripColours;
     public bool allQuadrants = true; //Create test for all quadrants.
     public bool narrowOncePerQuadrant = false; //Create a narrow test for each quadrant.
-    public bool evenDistance = false;
+    public bool evenDistance = true;
 
     [Range(1, 4)]
     public int quadrant = 1;
