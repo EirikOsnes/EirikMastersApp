@@ -57,6 +57,7 @@ public class TestRunner : MonoBehaviour
     public bool splitByTestType = true;
     public bool reverseTestTypeOrder = false;
     public bool nextVariablesShown = false;
+    private int orderingNum = 0;
 
     public float exposureTimeLimit = 0;
     public float searchTimeLimit = 0;
@@ -287,7 +288,7 @@ public class TestRunner : MonoBehaviour
         {
             TestData currentTestData = new TestData(currentTest);
             testPass.tests.Add(currentTestData);
-            logger.WriteTestToFile(currentTestData, "Tests/" + startTime.ToShortTimeString(), currentTest.ID);
+            logger.WriteTestToFile(currentTestData, startTime, currentTest.ID);
             tests.Remove(currentTest);
         } else
         {
@@ -301,7 +302,7 @@ public class TestRunner : MonoBehaviour
     /// <param name="test">Leave as null</param>
     void EndTestPass(Test test = null)
     {
-        logger.WriteTestPassToFile(testPass, "Tests/" + startTime.ToShortTimeString(), "TestPass");
+        logger.WriteTestPassToFile(testPass, startTime, "TestPass");
         state = RunState.Finished;
         currentTest.gameObject.SetActive(false);
         selectionHandler.DestroySelector();
@@ -365,11 +366,14 @@ public class TestRunner : MonoBehaviour
 
     void GroupIsSelected(Test test = null)
     {
-        try {state = RunState.NotBegun;
-        DisableTooltips(X: false);
-        UpdateInfoText();
-        groupSelectScreen.gameObject.SetActive(false);
-        SetUpTests(); }
+        try {
+            state = RunState.NotBegun;
+            DisableTooltips(X: false);
+            UpdateInfoText();
+            groupSelectScreen.gameObject.SetActive(false);
+            SetUpTests();
+            testPass.orderOption = orderingNum;
+        }
         catch (Exception e)
         {
             logger.Log(e.ToString());
@@ -674,6 +678,7 @@ public class TestRunner : MonoBehaviour
     /// <param name="buttonNum"></param>
     public void SelectOrderingByButton(int buttonNum)
     {
+        orderingNum = buttonNum;
         switch (buttonNum)
         {
             case 1:

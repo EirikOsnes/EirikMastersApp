@@ -10,5 +10,6 @@ using System.Collections.Generic;
 public class TestPass
 {
     public String date = DateTime.Now.ToLongDateString();
+    public int orderOption = 0;
     public List<TestData> tests = new List<TestData>();
 }

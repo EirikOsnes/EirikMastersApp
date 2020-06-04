@@ -60,17 +60,22 @@ public class Logger : MonoBehaviour
         }
     }
 
+    private string dateTimeToPath(System.DateTime dateTime)
+    {
+        return "Tests/" + dateTime.Year + "/" + dateTime.Month + "/" + dateTime.Day + "/" + dateTime.Hour +" "+ dateTime.Minute;
+    }
+
     /// <summary>
     /// Writes all information from a TestPass to a file in JSON format.
     /// </summary>
     /// <param name="tests">The TestPass to be saved.</param>
-    public void WriteTestPassToFile(TestPass tests, string path = "tests", string filename = "tests")
+    public void WriteTestPassToFile(TestPass tests, System.DateTime dateTime, string filename = "tests")
     {
         try
         {
             string jsonString = JsonUtility.ToJson(tests);
             Log(jsonString);
-            WriteToFile(filename + ".json", jsonString, path);
+            WriteToFile(filename + ".json", jsonString, dateTimeToPath(dateTime));
         }
         catch (System.Exception e)
         {
@@ -82,13 +87,13 @@ public class Logger : MonoBehaviour
     /// Writes all information from a Test to a file in JSON format.
     /// </summary>
     /// <param name="tests">The Test to be saved.</param>
-    public void WriteTestToFile(TestData test, string path = "", string filename = "test")
+    public void WriteTestToFile(TestData test, System.DateTime dateTime, string filename = "test")
     {
         try
         {
             string jsonString = JsonUtility.ToJson(test);
             Log(jsonString);
-            WriteToFile(filename + ".json", jsonString, path);
+            WriteToFile(filename + ".json", jsonString, dateTimeToPath(dateTime));
         }
         catch (System.Exception e)
         {

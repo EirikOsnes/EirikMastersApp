@@ -53,6 +53,8 @@ public class Test : MonoBehaviour
         ID = TestType.ToString();
         ID += " - Min:" + MinValue + " - Max:" + MaxValue;
         ID += " - " + FieldOfView.ToString();
+        ID += " - Q:" + Quadrant;
+        ID += " - " + Guid.NewGuid().ToString().Substring(0,5);
     }
 
     /// <summary>

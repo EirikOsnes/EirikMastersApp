@@ -156,8 +156,8 @@ public class TestCreator : MonoBehaviour
         testComponent.TestType = testType;
         testComponent.SetFOV(fieldOfView, narrowFOV);
         testComponent.SetCorrect(container.GetComponentsInChildren<Building>()[correctIndex].gameObject);
-        testComponent.MinValue = values.Min();
-        testComponent.MaxValue = values.Max();
+        testComponent.MinValue = minValue;
+        testComponent.MaxValue = maxValue;
         testComponent.distance = distance;
         testComponent.Quadrant = quadrant;
         testComponent.testSet = testSet;
