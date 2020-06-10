@@ -18,6 +18,7 @@ public class Test : MonoBehaviour
     private float startTime;
     private float observedTime = -1f;
     public float TimeUsed;
+    public float TimeViewingTarget;
     private bool testStarted = false;
     public float AggregatedRotation;
     public float leftAngle = 360;

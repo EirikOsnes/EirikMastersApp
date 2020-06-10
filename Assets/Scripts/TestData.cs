@@ -15,14 +15,15 @@ public class TestData
     public float TimeUsed;
     public float AggregatedRotation; //Sum of all head rotation done
     public float DegreesUsed; //Total of the 360 degrees viewed
-    public TestCreator.TestType TestType;
-    public TestCreator.FieldOfView FieldOfView;
+    public string TestType;
+    public string FieldOfView;
     public bool CorrectChosen;
     public float CorrectValue;
     public float ChosenValue;
     public float CorrectAngle;
     public float ChosenAngle;
     public float TimeAfterObserved;
+    public float TimeViewingTarget;
     public float MinValue;
     public float MaxValue;
     private Logger logger;
@@ -42,10 +43,11 @@ public class TestData
     {
         TestID = currentTest.ID;
         TimeUsed = currentTest.TimeUsed;
+        TimeViewingTarget = currentTest.TimeViewingTarget;
         AggregatedRotation = currentTest.AggregatedRotation;
         DegreesUsed = currentTest.GetDegreesUsed();
-        TestType = currentTest.TestType;
-        FieldOfView = currentTest.FieldOfView;
+        TestType = Enum.GetName(typeof(TestCreator.TestType) ,currentTest.TestType);
+        FieldOfView = Enum.GetName(typeof(TestCreator.FieldOfView), currentTest.FieldOfView);
         CorrectChosen = currentTest.IsCorrectChosen();
         CorrectValue = currentTest.GetCorrectValue();
         ChosenValue = (CorrectChosen) ? CorrectValue : currentTest.GetSelectedValue();

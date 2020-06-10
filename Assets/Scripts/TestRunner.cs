@@ -346,6 +346,7 @@ public class TestRunner : MonoBehaviour
     /// <param name="test">Test to activate</param>
     void PrepareTest(Test test)
     {
+        test.TimeViewingTarget = Time.time - stateStartTime;
         if (realVal != null) Destroy(realVal);
         test.gameObject.SetActive(true);
         ResetPosition();

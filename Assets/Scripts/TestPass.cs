@@ -9,7 +9,7 @@ using System.Collections.Generic;
 [Serializable]
 public class TestPass
 {
-    public String date = DateTime.Now.ToLongDateString();
+    public String date = DateTime.Now.ToString("dd MMM yyyy HH:mm:ss");
     public int orderOption = 0;
     public List<TestData> tests = new List<TestData>();
 }
