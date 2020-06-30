@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Object to define variables changed on a test-by-test basis.
+/// </summary>
 [CreateAssetMenu(fileName = "Test Parameters", menuName = "ScriptableObjects/TestParameter", order = 1)]
 public class TestParameters : ScriptableObject
 {

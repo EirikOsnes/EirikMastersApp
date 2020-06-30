@@ -245,6 +245,9 @@ public class TestRunner : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Method to use if debug info should be posted in app.
+    /// </summary>
     void LogDebugInfo()
     {
         logger.ClearLog();
@@ -310,6 +313,10 @@ public class TestRunner : MonoBehaviour
         UpdateInfoText();
     }
 
+    /// <summary>
+    /// End the tutorial.
+    /// </summary>
+    /// <param name="test">Leave as null.</param>
     void EndTutorial(Test test = null)
     {
         logger.Log("Tutorial ended");
@@ -365,6 +372,10 @@ public class TestRunner : MonoBehaviour
         stateStartTime = Time.time;
     }
 
+    /// <summary>
+    /// Call when group has been selected.
+    /// </summary>
+    /// <param name="test">Leave as null</param>
     void GroupIsSelected(Test test = null)
     {
         try {
@@ -401,6 +412,9 @@ public class TestRunner : MonoBehaviour
         return tests[0];
     }
 
+    /// <summary>
+    /// Create and activate tutorial test.
+    /// </summary>
     private void SetUpTutorialTests()
     {
         if (tutorialParameters == null) return;
@@ -416,10 +430,11 @@ public class TestRunner : MonoBehaviour
         tutorialActive = true;
     }
 
+    /// <summary>
+    /// Set up the tests, in order.
+    /// </summary>
     private void SetUpTests()
     {
-
-        //TODO: Separate by TestType?
 
         List<TestSet> sets = GetTestSets();
         List<Test> tests = new List<Test>();
@@ -463,6 +478,11 @@ public class TestRunner : MonoBehaviour
         DisableAllTests(GetAllTestsInScene());
     }
 
+    /// <summary>
+    /// Sort the tests.
+    /// </summary>
+    /// <param name="sets">The available test sets.</param>
+    /// <returns>A list of tests, in the requested order.</returns>
     private List<Test> GetTestOrder(List<TestSet> sets)
     {
         List<Test> tests = new List<Test>();
@@ -540,6 +560,10 @@ public class TestRunner : MonoBehaviour
         return tests;
     }
 
+    /// <summary>
+    /// Disables, and thus hides all tests, so only one will be shown at a time.
+    /// </summary>
+    /// <param name="tests">The tests to disable.</param>
     private void DisableAllTests(List<Test> tests)
     {
         foreach (Test test in tests)
@@ -567,6 +591,10 @@ public class TestRunner : MonoBehaviour
 
     }
 
+    /// <summary>
+    /// Access all the tests, either from RuntimeCreator or premade.
+    /// </summary>
+    /// <returns></returns>
     List<TestSet> GetTestSets()
     {
         if (createTestAtRuntime) return GetAllTestSetsFromRuntimeCreator();
@@ -605,11 +633,19 @@ public class TestRunner : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Creates the tests runtime.
+    /// </summary>
+    /// <returns>All the test sets created.</returns>
     List<TestSet> GetAllTestSetsFromRuntimeCreator()
     {
         return creator.CreateTests();
     }
 
+    /// <summary>
+    /// Handles the text to be shown on the information screen.
+    /// </summary>
+    /// <param name="test">The test for which to show information.</param>
     private void UpdateInfoText(Test test = null)
     {
         string infoString = "";
@@ -743,6 +779,11 @@ public class TestRunner : MonoBehaviour
         transitioning = false;
     }
 
+    /// <summary>
+    /// Creates a list of Tests from a list of GameObjects containing them.
+    /// </summary>
+    /// <param name="gameObjects"></param>
+    /// <returns></returns>
     public List<Test> TestListFromGameObjectList(List<GameObject> gameObjects)
     {
         List<Test> tests = new List<Test>();
@@ -757,6 +798,11 @@ public class TestRunner : MonoBehaviour
 
 static class Helpers
 {
+    /// <summary>
+    /// Shuffles a list randomly.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="list"></param>
     public static void Shuffle<T>(this IList<T> list)
     {
         int n = list.Count;

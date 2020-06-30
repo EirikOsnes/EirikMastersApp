@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Class to group tests for sorting purposes.
+/// </summary>
 public class TestSet
 {
     public List<GameObject> narrowTests = new List<GameObject>();

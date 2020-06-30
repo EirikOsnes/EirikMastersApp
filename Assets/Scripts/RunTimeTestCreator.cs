@@ -10,8 +10,11 @@ public class RunTimeTestCreator: MonoBehaviour
 
     public List<TestSet> TestSets { get => testSets; set => testSets = value; }
 
-    //TODO: Get access to testsets in runner
-
+    /// <summary>
+    /// Create tests in runtime.
+    /// </summary>
+    /// <param name="testParameters">The test parameters to create tests for.</param>
+    /// <returns>A list of TestSets containing all the tests.</returns>
     public List<TestSet> CreateTests(List<TestParameters> testParameters = null)
     {
         if (!testCreator) testCreator = FindObjectOfType<TestCreator>();
@@ -20,6 +23,10 @@ public class RunTimeTestCreator: MonoBehaviour
         return testSets;
     }
 
+    /// <summary>
+    /// Creates all tests defined by the test parameters
+    /// </summary>
+    /// <param name="testParameters">Test Parameters defining the tests to be created</param>
     private void CreateAllTests(List<TestParameters> testParameters = null)
     {
 
@@ -71,7 +78,7 @@ public class RunTimeTestCreator: MonoBehaviour
                     }
 
                 }
-                else
+                else //Only one FieldOfView type to be created
                 {
                     for (int q = 0; q < quadrants.Length; q++)
                     {
@@ -85,6 +92,11 @@ public class RunTimeTestCreator: MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Creates test for one FieldOfView type
+    /// </summary>
+    /// <param name="parameters">Test Parameters defining tests to create</param>
+    /// <param name="myTestSet">Test set to add tests to</param>
     private void CreateOneDimensionalTests(TestParameters parameters, TestSet myTestSet)
     {
         if (parameters.fov == TestCreator.FieldOfView.Full)
@@ -99,6 +111,10 @@ public class RunTimeTestCreator: MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Set up the TestCreator.
+    /// </summary>
+    /// <param name="parameters">The test parameters to set the TestCreator to.</param>
     private void SetTestCreatorValues(TestParameters parameters)
     {
         testCreator.testType = parameters.testType;
@@ -111,11 +127,5 @@ public class RunTimeTestCreator: MonoBehaviour
         testCreator.stripColours = parameters.stripColours;
         testCreator.evenDistance = parameters.evenDistance;
         testCreator.randomizeQuadrant = parameters.randomizeQuadrant;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 }

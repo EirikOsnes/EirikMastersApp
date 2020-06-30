@@ -60,6 +60,11 @@ public class Logger : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Format datetime to a path for saving tests
+    /// </summary>
+    /// <param name="dateTime">Datetime test started</param>
+    /// <returns>Path for test data</returns>
     private string dateTimeToPath(System.DateTime dateTime)
     {
         return "Tests/" + dateTime.Year + "/" + dateTime.Month + "/" + dateTime.Day + "/" + dateTime.Hour +" "+ dateTime.Minute;
